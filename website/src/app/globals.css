@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f7fb;
+  --foreground: #172033;
+  --surface: #ffffff;
+  --surface-muted: #eef2f8;
+  --border: #d7deea;
+  --parent-bg: #111827;
+  --parent-surface: #1b2435;
+  --parent-surface-soft: #243147;
+  --parent-text: #edf2ff;
+  --parent-muted: #a9b5cb;
+  --child-bg: #f7f2ff;
+  --child-surface: #fffdf8;
+  --child-surface-soft: #fff1cf;
+  --child-text: #1f2937;
+  --child-muted: #5f6f86;
+  --accent-reading: #6d7cff;
+  --accent-math: #3bb2a4;
+  --accent-thinking: #f4a259;
+  --accent-reward: #f2c94c;
+  --radius-card: 1.5rem;
+  --shadow-soft: 0 18px 50px rgba(23, 32, 51, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 32%),
+    var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(109, 124, 255, 0.18);
+}
+
+.shell-page {
+  width: min(1120px, calc(100% - 1.5rem));
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .shell-page {
+    width: min(1120px, calc(100% - 3rem));
+  }
+}
