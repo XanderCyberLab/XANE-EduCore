@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ChildAgeBand {
+  EARLY_YEARS
+  LOWER_ELEMENTARY
+  UPPER_ELEMENTARY
+}
+
+enum PlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum SubjectArea {
+  READING
+  MATH
+  CRITICAL_THINKING
+}
+
+enum PlanItemType {
+  LESSON
+  ACTIVITY
+  PRACTICE
+  OFFLINE
+  PRINTABLE
+}
+
+enum TaskCompletionStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+model ParentUser {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String?
+  timezone       String?        @default("America/Chicago")
+  sessionVersion Int            @default(1)
+  children       ChildProfile[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model ChildProfile {
+  id              String            @id @default(cuid())
+  parentUserId    String
+  nickname        String
+  username        String            @unique
+  pinHash         String?
+  ageBand         ChildAgeBand?
+  isArchived      Boolean           @default(false)
+  sessionVersion  Int               @default(1)
+  parentUser      ParentUser        @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
+  rewardPlan      RewardPlan?
+  weeklyPlans     WeeklyPlan[]
+  taskCompletions TaskCompletion[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([parentUserId])
+}
+
+model RewardPlan {
+  id             String       @id @default(cuid())
+  childProfileId String       @unique
+  title          String
+  description    String?
+  tokenGoal      Int          @default(10)
+  isActive       Boolean      @default(true)
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model WeeklyPlan {
+  id           String       @id @default(cuid())
+  childProfileId String
+  weekStart    DateTime     @db.Date
+  status       PlanStatus   @default(DRAFT)
+  summary      String?
+  childProfile ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  items        WeeklyPlanItem[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([childProfileId, weekStart])
+  @@index([childProfileId, status])
+}
+
+model WeeklyPlanItem {
+  id              String             @id @default(cuid())
+  weeklyPlanId    String
+  subject         SubjectArea
+  assignedDate    DateTime           @db.Date
+  title           String
+  details         String?
+  itemType        PlanItemType       @default(LESSON)
+  sortOrder       Int                @default(0)
+  tokenValue      Int                @default(1)
+  isPrintable     Boolean            @default(false)
+  isOffline       Boolean            @default(false)
+  weeklyPlan      WeeklyPlan         @relation(fields: [weeklyPlanId], references: [id], onDelete: Cascade)
+  completions     TaskCompletion[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([weeklyPlanId, assignedDate])
+  @@index([subject, assignedDate])
+}
+
+model TaskCompletion {
+  id               String               @id @default(cuid())
+  childProfileId   String
+  weeklyPlanItemId String
+  status           TaskCompletionStatus @default(PENDING)
+  awardedTokens    Int                  @default(0)
+  completedAt      DateTime?
+  completionNotes  String?
+  childProfile     ChildProfile         @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  weeklyPlanItem   WeeklyPlanItem       @relation(fields: [weeklyPlanItemId], references: [id], onDelete: Cascade)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@unique([childProfileId, weeklyPlanItemId])
+  @@index([childProfileId, status])
+}

@@ -1,14 +1,19 @@
+import { ParentChildCreateForm } from "@/components/parent-child-create-form";
 import { ChildManagementCard, ParentHero } from "@/components/parent-ui";
-import { parentDashboardData } from "@/lib/mock-parent";
+import { requireParentSession } from "@/lib/auth/guards";
+import { getParentDashboardData } from "@/lib/parent-dashboard";
 
-export default function ParentChildrenPage() {
+export default async function ParentChildrenPage() {
+  const session = await requireParentSession();
+  const data = await getParentDashboardData(session.parentUserId, session.email);
+
   return (
     <main className="space-y-6 pb-8">
       <ParentHero
-        title="Child profiles feel calm, clear, and parent-led"
-        description="This mock children space treats profile setup as a lightweight family workflow. Parents can quickly understand identity, login basics, learning needs, and reward momentum without drifting into school-admin energy."
-        plannerReadiness="2 child profiles are ready for planning"
-        attentionNote="EduCore keeps child setup nickname-first, parent-managed, and intentionally minimal so future login, planning, and rewards stay simple."
+        title="Child profiles stay calm, clear, and connected"
+        description="This children space now reads from saved profiles, login readiness, rewards, and weekly plan activity where available, while still keeping setup lightweight and family-first."
+        plannerReadiness={data.familySummary.plannerReadiness}
+        attentionNote="EduCore keeps child setup nickname-first, parent-managed, and intentionally minimal so planning, login, and rewards can stay trustworthy without school-admin overhead."
       />
 
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
@@ -16,36 +21,43 @@ export default function ParentChildrenPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Privacy-first setup</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Only the child details a family actually needs</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">
-            Profiles center on nickname, age band, simple login readiness, reward direction, and learning notes. Real names, extra identifiers, and heavy forms stay out of the way unless a future need proves otherwise.
+            Profiles center on nickname, age band, simple login readiness, and reward direction. Real names, extra identifiers, and heavy forms stay out of the way unless a future need proves otherwise.
           </p>
         </div>
 
         <div className="rounded-[var(--radius-card)] border border-white/10 bg-[linear-gradient(135deg,rgba(242,201,76,0.12),rgba(36,49,71,0.78),rgba(27,36,53,1))] p-6 shadow-[var(--shadow-soft)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Planned parent actions</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">What parents can do now</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
-              "Add child",
-              "Edit profile",
-              "Adjust login",
+              "Create child profile",
+              "Set username",
+              "Set PIN",
               "Review reward setup",
-              "Review learning profile",
+              "Connect future planning",
             ].map((action) => (
-              <button
+              <div
                 key={action}
-                type="button"
-                className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-white/10"
+                className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-left text-sm font-medium text-white"
               >
                 {action}
-              </button>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
+      <ParentChildCreateForm />
+
       <section className="space-y-6">
-        {parentDashboardData.children.map((child) => (
-          <ChildManagementCard key={child.id} child={child} />
-        ))}
+        {data.children.length > 0 ? (
+          data.children.map((child) => <ChildManagementCard key={child.id} child={child} />)
+        ) : (
+          <section className="rounded-[var(--radius-card)] border border-dashed border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">No child profiles yet</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">The family space is ready when you are</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">Once a child profile is added, this page will show nickname-first identity, login readiness, reward direction, and saved learning activity in one calm place.</p>
+          </section>
+        )}
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
@@ -68,10 +80,10 @@ export default function ParentChildrenPage() {
         </div>
 
         <div className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Mock surface note</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Safe to review before backend work</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Current scope note</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">The overview is live, editing can come next</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--parent-muted)]">
-            All actions are placeholders. This route is meant to validate product shape and parent confidence before auth, persistence, and planning logic are implemented.
+            This page now reads from persisted child, reward, and weekly plan data. Profile editing actions are still placeholders until a follow-up ticket adds full parent management flows.
           </p>
         </div>
       </section>

@@ -5,10 +5,15 @@ import {
   RewardOverviewCard,
   SummaryCard,
 } from "@/components/parent-ui";
-import { parentDashboardData } from "@/lib/mock-parent";
+import { requireParentSession } from "@/lib/auth/guards";
+import { getParentDashboardData } from "@/lib/parent-dashboard";
 
-export default function ParentDashboardPage() {
-  const { familySummary, weeklySnapshot, children, plannerPreview, rewardHighlights, parentName, welcomeLabel } = parentDashboardData;
+export default async function ParentDashboardPage() {
+  const session = await requireParentSession();
+  const { familySummary, weeklySnapshot, children, plannerPreview, rewardHighlights, parentName, welcomeLabel } = await getParentDashboardData(
+    session.parentUserId,
+    session.email,
+  );
 
   return (
     <main className="space-y-6 pb-8">
@@ -28,7 +33,11 @@ export default function ParentDashboardPage() {
         <SummaryCard
           label="Today"
           value={`${weeklySnapshot.completedToday}/${weeklySnapshot.plannedToday}`}
-          note="Most of today's plan is already done, with one gentle follow-up remaining."
+          note={
+            weeklySnapshot.plannedToday > 0
+              ? `${Math.max(weeklySnapshot.plannedToday - weeklySnapshot.completedToday, 0)} gentle ${weeklySnapshot.plannedToday - weeklySnapshot.completedToday === 1 ? "follow-up remains" : "follow-ups remain"} today.`
+              : "No tasks are stored for today yet."
+          }
         />
         <SummaryCard
           label="Active children"
@@ -62,7 +71,7 @@ export default function ParentDashboardPage() {
                 </div>
                 <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
                   <p className="text-sm text-[var(--parent-muted)]">Parent note</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">Small, consistent sessions are working better than longer pushes.</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-200">{familySummary.attentionNote}</p>
                 </div>
               </div>
             </div>

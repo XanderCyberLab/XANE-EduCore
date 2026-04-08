@@ -1,3 +1,33 @@
+export const mockChildProfiles = [
+  {
+    id: "sunny",
+    name: "Sunny",
+    username: "sunny-star",
+    avatar: "☀️",
+    color: "#7a8cff",
+    glow: "rgba(122,140,255,0.24)",
+    helperText: "Your calm starter",
+  },
+  {
+    id: "milo",
+    name: "Milo",
+    username: "milo-moon",
+    avatar: "🌙",
+    color: "#49b5a5",
+    glow: "rgba(73,181,165,0.24)",
+    helperText: "Ready for tiny wins",
+  },
+  {
+    id: "nova",
+    name: "Nova",
+    username: "nova-comet",
+    avatar: "✨",
+    color: "#f0a34a",
+    glow: "rgba(240,163,74,0.24)",
+    helperText: "Your bright learning path",
+  },
+] as const;
+
 export const childDailyPlan = {
   childName: "Sunny",
   greeting: "Ready for your calm learning day?",

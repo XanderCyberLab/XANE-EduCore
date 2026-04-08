@@ -1,8 +1,10 @@
 import { PlannerDetailBoard } from "@/components/parent-ui";
-import { parentDashboardData } from "@/lib/mock-parent";
+import { requireParentSession } from "@/lib/auth/guards";
+import { getParentPlannerData } from "@/lib/planner-data";
 
-export default function ParentPlannerPage() {
-  const planner = parentDashboardData.plannerDetail;
+export default async function ParentPlannerPage() {
+  const session = await requireParentSession();
+  const planner = await getParentPlannerData(session.parentUserId);
 
   return (
     <main className="space-y-6 pb-8">

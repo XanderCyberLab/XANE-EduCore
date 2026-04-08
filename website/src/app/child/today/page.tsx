@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { TodayTaskList } from "@/components/child-ui";
 import { ChildPageIntro } from "@/components/shells";
-import { childDailyPlan } from "@/lib/mock-child";
+import { requireChildSession } from "@/lib/auth/guards";
+import { getChildDashboardData } from "@/lib/child-dashboard";
 
-export default function ChildTodayPage() {
-  const progressWidth = `${(childDailyPlan.completedTasks / childDailyPlan.totalTasks) * 100}%`;
+export default async function ChildTodayPage() {
+  const session = await requireChildSession();
+  const childDailyPlan = await getChildDashboardData(session.childProfileId);
+
+  if (!childDailyPlan) {
+    return null;
+  }
+
+  const progressWidth = `${childDailyPlan.totalTasks > 0 ? (childDailyPlan.completedTasks / childDailyPlan.totalTasks) * 100 : 0}%`;
 
   return (
     <main className="space-y-6">
@@ -28,7 +36,7 @@ export default function ChildTodayPage() {
         </div>
       </section>
 
-      <TodayTaskList />
+      <TodayTaskList tasks={childDailyPlan.tasks} />
 
       <section className="grid gap-4 md:grid-cols-2">
         <Link href="/child/home" className="rounded-[calc(var(--radius-card)+0.25rem)] border border-white/70 bg-[var(--child-surface)] p-5 text-center text-base font-semibold text-[var(--child-text)] shadow-[var(--shadow-soft)]">

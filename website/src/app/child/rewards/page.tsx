@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { TokenJarCard } from "@/components/child-ui";
 import { ChildPageIntro } from "@/components/shells";
-import { childDailyPlan } from "@/lib/mock-child";
+import { requireChildSession } from "@/lib/auth/guards";
+import { getChildDashboardData } from "@/lib/child-dashboard";
 
-export default function ChildRewardsPage() {
+export default async function ChildRewardsPage() {
+  const session = await requireChildSession();
+  const childDailyPlan = await getChildDashboardData(session.childProfileId);
+
+  if (!childDailyPlan) {
+    return null;
+  }
+
   return (
     <main className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <section className="rounded-[calc(var(--radius-card)+0.5rem)] border border-white/70 bg-[var(--child-surface)] p-6 shadow-[var(--shadow-soft)] md:p-8">
@@ -23,7 +31,7 @@ export default function ChildRewardsPage() {
           </Link>
         </div>
       </section>
-      <TokenJarCard />
+      <TokenJarCard tokensEarned={childDailyPlan.tokensEarned} tokenGoal={childDailyPlan.tokenGoal} reward={childDailyPlan.reward} />
     </main>
   );
 }

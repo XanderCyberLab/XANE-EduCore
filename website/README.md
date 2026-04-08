@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is the EduCore website app, built with Next.js, TypeScript, Tailwind, Prisma, and PostgreSQL.
 
-## Getting Started
+## Local quick start
 
-First, run the development server:
+1. Copy `.env.example` to `.env`.
+2. Make sure your local PostgreSQL database is running.
+3. Apply migrations and generate the Prisma client.
+4. Bootstrap a safe fake parent account, child account, reward, and starter weekly plan.
+5. Start the development server.
+
+```bash
+cp .env.example .env
+npm install
+npm run db:setup
+npm run db:bootstrap
+npm run dev
+```
+
+After bootstrap, use these default local-only credentials unless you override them with flags:
+
+- Parent email: `parent@example.com`
+- Parent password: `change-me-now`
+- Child username: `sunny-star`
+- Child PIN: `1234`
+
+Recommended first checks:
+
+- Parent login: `http://localhost:3000/parent/login`
+- Child login: `http://localhost:3000/child/login`
+- Parent planner: `http://localhost:3000/parent/planner`
+- Child daily flow: `http://localhost:3000/child/home` and `http://localhost:3000/child/today`
+
+## Local database workflow
+
+### Apply migrations and generate Prisma client
+
+```bash
+npm run db:setup
+```
+
+This wraps the normal local Prisma flow:
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate -- --name local_setup
+```
+
+You can still use raw Prisma commands directly when needed.
+
+### Bootstrap a usable local test state
+
+```bash
+npm run db:bootstrap
+```
+
+What it creates or updates:
+
+- one parent account
+- one child account
+- one active reward plan
+- one starter active weekly plan for the current week
+- three tasks for today, plus additional tasks across the week
+
+Useful flags:
+
+```bash
+npm run db:bootstrap -- \
+  --parent-email demo.parent@example.com \
+  --parent-password 'strong-local-password' \
+  --child-nickname Sunny \
+  --child-username sunny-star \
+  --child-pin 2468 \
+  --reward-title 'Story basket picnic' \
+  --token-goal 12 \
+  --reset-plan \
+  --mark-first-task-complete
+```
+
+Notes:
+
+- `--reset-plan` clears and recreates the current week's starter plan for that child.
+- Without `--reset-plan`, an existing plan is reused so local progress is not wiped by accident.
+- `--mark-first-task-complete` is handy if you want immediate reward/progress state to review.
+
+## Focused account helpers
+
+If you only want to create or update one piece at a time:
+
+### Create or reset a parent account
+
+```bash
+npm run parent:create -- --email parent@example.com --password 'change-me-now'
+```
+
+Optional flag:
+
+- `--timezone America/Chicago`
+
+### Create or reset a child account and reward plan
+
+```bash
+npm run child:create -- \
+  --parent-email parent@example.com \
+  --nickname Sunny \
+  --username sunny-star \
+  --pin 1234 \
+  --reward-title 'Story basket picnic' \
+  --token-goal 12
+```
+
+## Parent auth notes
+
+- Parent auth uses an HTTP-only signed session cookie.
+- Protected `/parent/*` routes redirect to `/parent/login` when no valid parent session is present.
+- Creating or resetting a parent with `npm run parent:create` or `npm run db:bootstrap` bumps `sessionVersion`, which cleanly invalidates older parent sessions.
+
+## Development server
+
+Run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

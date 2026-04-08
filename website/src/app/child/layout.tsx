@@ -1,8 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { signOutChild } from "@/app/auth-actions";
+import { readChildSession } from "@/lib/auth/session";
 import { childNav, childSubjects } from "@/lib/site";
 
-export default function ChildLayout({ children }: { children: ReactNode }) {
+export default async function ChildLayout({ children }: { children: ReactNode }) {
+  const session = await readChildSession();
+  const isLoginRoute = !session;
+
   return (
     <div className="min-h-screen bg-[var(--child-bg)] text-[var(--child-text)]">
       <div className="shell-page flex min-h-screen flex-col gap-5 py-4 md:gap-6 md:py-6">
@@ -14,31 +19,46 @@ export default function ChildLayout({ children }: { children: ReactNode }) {
                   EduCore
                 </Link>
                 <p className="mt-2 text-3xl font-semibold">Child space</p>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--child-muted)]">Warm, clear, and ready for one small step at a time.</p>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--child-muted)]">
+                  {session ? `Hello ${session.nickname}. Warm, clear, and ready for one small step at a time.` : "Warm, clear, and ready for one small step at a time."}
+                </p>
               </div>
-              <nav className="flex flex-wrap gap-2">
-                {childNav.map((item) => (
-                  <Link key={item.href} href={item.href} className="rounded-full bg-white/85 px-4 py-3 text-sm font-semibold text-[var(--child-text)] shadow-sm transition hover:bg-white">
-                    {item.label}
+              <div className="flex flex-wrap items-center gap-2">
+                {!isLoginRoute ? (
+                  <nav className="flex flex-wrap gap-2">
+                    {childNav.map((item) => (
+                      <Link key={item.href} href={item.href} className="rounded-full bg-white/85 px-4 py-3 text-sm font-semibold text-[var(--child-text)] shadow-sm transition hover:bg-white">
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
+                ) : null}
+                {session ? (
+                  <form action={signOutChild}>
+                    <button type="submit" className="rounded-full bg-white/85 px-4 py-3 text-sm font-semibold text-[var(--child-text)] shadow-sm transition hover:bg-white">
+                      Sign out
+                    </button>
+                  </form>
+                ) : null}
+              </div>
+            </div>
+            {!isLoginRoute ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                {childSubjects.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-[1.5rem] px-4 py-4 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
+                    style={{ backgroundColor: item.color }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{item.label}</span>
+                      <span aria-hidden="true">→</span>
+                    </div>
                   </Link>
                 ))}
-              </nav>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              {childSubjects.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-[1.5rem] px-4 py-4 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
-                  style={{ backgroundColor: item.color }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span>{item.label}</span>
-                    <span aria-hidden="true">→</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+              </div>
+            ) : null}
           </div>
         </header>
         <div className="flex-1">{children}</div>

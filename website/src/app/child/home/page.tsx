@@ -1,9 +1,17 @@
 import Link from "next/link";
-import { ChildPageIntro } from "@/components/shells";
 import { SubjectCardGrid, TodayTaskList, TokenJarCard } from "@/components/child-ui";
-import { childDailyPlan } from "@/lib/mock-child";
+import { ChildPageIntro } from "@/components/shells";
+import { requireChildSession } from "@/lib/auth/guards";
+import { getChildDashboardData } from "@/lib/child-dashboard";
 
-export default function ChildHomePage() {
+export default async function ChildHomePage() {
+  const session = await requireChildSession();
+  const childDailyPlan = await getChildDashboardData(session.childProfileId);
+
+  if (!childDailyPlan) {
+    return null;
+  }
+
   return (
     <main className="space-y-6">
       <section className="overflow-hidden rounded-[calc(var(--radius-card)+0.75rem)] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(244,248,255,0.92))] p-6 shadow-[var(--shadow-soft)] md:p-8">
@@ -63,10 +71,10 @@ export default function ChildHomePage() {
             </Link>
           </div>
           <div className="mt-5">
-            <TodayTaskList compact />
+            <TodayTaskList compact tasks={childDailyPlan.tasks} />
           </div>
         </div>
-        <TokenJarCard />
+        <TokenJarCard tokensEarned={childDailyPlan.tokensEarned} tokenGoal={childDailyPlan.tokenGoal} reward={childDailyPlan.reward} />
       </section>
 
       <section className="space-y-4">
@@ -74,7 +82,7 @@ export default function ChildHomePage() {
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Subjects</p>
           <h2 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">Choose your learning lane</h2>
         </div>
-        <SubjectCardGrid />
+        <SubjectCardGrid subjects={childDailyPlan.subjectCards} />
       </section>
     </main>
   );
