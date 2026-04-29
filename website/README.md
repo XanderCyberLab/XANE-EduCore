@@ -16,6 +16,52 @@ npm run db:bootstrap
 npm run dev
 ```
 
+## Docker compose, development only
+
+This repository now includes a dev-only Docker setup for the website and PostgreSQL.
+
+1. Copy `.env.example` to `.env`.
+2. Change `DATABASE_URL` in `.env` to use the compose database host:
+3. Start the containers.
+4. Run Prisma setup manually inside the web container.
+5. Bootstrap local sample data manually inside the web container.
+
+Example `.env` database value for Docker compose:
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@db:5432/educore?schema=public"
+```
+
+Start the app and database:
+
+```bash
+docker compose up --build
+```
+
+In a second terminal, apply migrations and generate Prisma client:
+
+```bash
+docker compose exec web npm run db:setup
+```
+
+Bootstrap the local test data:
+
+```bash
+docker compose exec web npm run db:bootstrap
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+Notes:
+
+- This is for local development only.
+- Prisma setup and bootstrap are intentionally manual, not automatic at container start.
+- The app source is mounted into the container so local code changes are reflected while developing.
+
 After bootstrap, use these default local-only credentials unless you override them with flags:
 
 - Parent email: `parent@example.com`
@@ -122,4 +168,26 @@ Run:
 npm run dev
 ```
 
+Or with Docker compose:
+
+```bash
+docker compose up --build
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Docker dev note
+
+For Docker Compose runs, the app expects runtime values from `.env`.
+
+Minimum working Docker dev values:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@db:5432/educore?schema=public"
+AUTH_SECRET="dev-secret-change-me"
+```
+
+Notes:
+- `.env.example` is a template only.
+- `.env` is the file actually loaded by the running app.
+- When running in Docker Compose, use `db` as the PostgreSQL host, not `localhost`.

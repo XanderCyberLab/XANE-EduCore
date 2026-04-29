@@ -1,4 +1,4 @@
-import { getArg, runLocalCommand, requireDatabaseUrl } from "./_shared";
+import { getArg, runLocalCommand, requireDatabaseUrl } from "./_shared.ts";
 
 function main() {
   requireDatabaseUrl();
