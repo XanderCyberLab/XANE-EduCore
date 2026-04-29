@@ -1,11 +1,15 @@
 import { ParentChildCreateForm } from "@/components/parent-child-create-form";
-import { ChildManagementCard, ParentHero } from "@/components/parent-ui";
+import { ChildManagementCard, ParentHero, ParentSurfaceSummary } from "@/components/parent-ui";
 import { requireParentSession } from "@/lib/auth/guards";
 import { getParentDashboardData } from "@/lib/parent-dashboard";
 
 export default async function ParentChildrenPage() {
   const session = await requireParentSession();
   const data = await getParentDashboardData(session.parentUserId, session.email);
+
+  const childrenReadyForPlans = data.children.filter((child) => child.setupState === "Connected to saved plans").length;
+  const childrenWithPins = data.children.filter((child) => child.pinStatus === "Parent-managed PIN active").length;
+  const rewardLinkedChildren = data.children.filter((child) => child.rewardName !== "Reward still open").length;
 
   return (
     <main className="space-y-6 pb-8">
@@ -14,6 +18,26 @@ export default async function ParentChildrenPage() {
         description="This children space now reads from saved profiles, login readiness, rewards, and weekly plan activity where available, while still keeping setup lightweight and family-first."
         plannerReadiness={data.familySummary.plannerReadiness}
         attentionNote="EduCore keeps child setup nickname-first, parent-managed, and intentionally minimal so planning, login, and rewards can stay trustworthy without school-admin overhead."
+      />
+
+      <ParentSurfaceSummary
+        items={[
+          {
+            label: "Saved-plan connection",
+            value: `${childrenReadyForPlans}/${data.children.length}`,
+            note: data.children.length > 0 ? "Children already tied to persisted weekly planning." : "Profiles can stay light until you are ready to plan.",
+          },
+          {
+            label: "Login readiness",
+            value: `${childrenWithPins}/${data.children.length}`,
+            note: data.children.length > 0 ? "Profiles with parent-managed PIN setup in place." : "PIN readiness appears here once profiles exist.",
+          },
+          {
+            label: "Reward connection",
+            value: `${rewardLinkedChildren}/${data.children.length}`,
+            note: data.children.length > 0 ? "Profiles already connected to an active reward path." : "Reward setup can be added later without extra profile overhead.",
+          },
+        ]}
       />
 
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
@@ -30,10 +54,10 @@ export default async function ParentChildrenPage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
               "Create child profile",
-              "Set username",
-              "Set PIN",
+              "Edit nickname + age band",
+              "Update username",
+              "Rotate child PIN",
               "Review reward setup",
-              "Connect future planning",
             ].map((action) => (
               <div
                 key={action}
@@ -81,9 +105,9 @@ export default async function ParentChildrenPage() {
 
         <div className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Current scope note</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">The overview is live, editing can come next</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Parents can now manage child basics in-product</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--parent-muted)]">
-            This page now reads from persisted child, reward, and weekly plan data. Profile editing actions are still placeholders until a follow-up ticket adds full parent management flows.
+            Child profiles can now be updated here with lightweight server-side handling for nickname, age band, username, and PIN rotation, while keeping the experience calm and privacy-first.
           </p>
         </div>
       </section>

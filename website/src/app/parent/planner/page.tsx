@@ -1,4 +1,4 @@
-import { PlannerDetailBoard } from "@/components/parent-ui";
+import { ParentSurfaceSummary, PlannerDetailBoard } from "@/components/parent-ui";
 import { requireParentSession } from "@/lib/auth/guards";
 import { getParentPlannerData } from "@/lib/planner-data";
 
@@ -8,6 +8,8 @@ export default async function ParentPlannerPage() {
 
   return (
     <main className="space-y-6 pb-8">
+      <ParentSurfaceSummary items={planner.surfaceSummary} />
+
       <PlannerDetailBoard
         weekLabel={planner.weekLabel}
         title={planner.title}
@@ -17,6 +19,9 @@ export default async function ParentPlannerPage() {
         controls={planner.controls}
         printables={planner.printables}
         days={planner.days}
+        plannerChildren={planner.plannerChildren}
+        defaultWeekOf={planner.defaultWeekOf}
+        parentGuidance={planner.parentGuidance}
       />
     </main>
   );

@@ -1,9 +1,9 @@
 import {
   ChildOverviewCard,
   ParentHero,
+  ParentSurfaceSummary,
   PlannerPreviewCard,
   RewardOverviewCard,
-  SummaryCard,
 } from "@/components/parent-ui";
 import { requireParentSession } from "@/lib/auth/guards";
 import { getParentDashboardData } from "@/lib/parent-dashboard";
@@ -24,27 +24,28 @@ export default async function ParentDashboardPage() {
         attentionNote={familySummary.attentionNote}
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <SummaryCard
-          label="Family summary"
-          value={`${familySummary.completedBlocks}/${familySummary.weeklyBlocks}`}
-          note="Learning blocks completed this week across Reading, Math, and Thinking."
-        />
-        <SummaryCard
-          label="Today"
-          value={`${weeklySnapshot.completedToday}/${weeklySnapshot.plannedToday}`}
-          note={
-            weeklySnapshot.plannedToday > 0
-              ? `${Math.max(weeklySnapshot.plannedToday - weeklySnapshot.completedToday, 0)} gentle ${weeklySnapshot.plannedToday - weeklySnapshot.completedToday === 1 ? "follow-up remains" : "follow-ups remain"} today.`
-              : "No tasks are stored for today yet."
-          }
-        />
-        <SummaryCard
-          label="Active children"
-          value={String(familySummary.activeChildren)}
-          note={weeklySnapshot.calmNote}
-        />
-      </section>
+      <ParentSurfaceSummary
+        items={[
+          {
+            label: "Family summary",
+            value: `${familySummary.completedBlocks}/${familySummary.weeklyBlocks}`,
+            note: "Learning blocks completed this week across Reading, Math, and Thinking.",
+          },
+          {
+            label: "Today",
+            value: `${weeklySnapshot.completedToday}/${weeklySnapshot.plannedToday}`,
+            note:
+              weeklySnapshot.plannedToday > 0
+                ? `${Math.max(weeklySnapshot.plannedToday - weeklySnapshot.completedToday, 0)} gentle ${weeklySnapshot.plannedToday - weeklySnapshot.completedToday === 1 ? "follow-up remains" : "follow-ups remain"} today.`
+                : "No tasks are stored for today yet.",
+          },
+          {
+            label: "Active children",
+            value: String(familySummary.activeChildren),
+            note: weeklySnapshot.calmNote,
+          },
+        ]}
+      />
 
       <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
         <div className="space-y-6">

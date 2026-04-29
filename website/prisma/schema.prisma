@@ -71,15 +71,19 @@ model ChildProfile {
 }
 
 model RewardPlan {
-  id             String       @id @default(cuid())
-  childProfileId String       @unique
-  title          String
-  description    String?
-  tokenGoal      Int          @default(10)
-  isActive       Boolean      @default(true)
-  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id               String       @id @default(cuid())
+  childProfileId   String       @unique
+  title            String
+  description      String?
+  tokenGoal        Int          @default(10)
+  isActive         Boolean      @default(true)
+  cycleStartedAt   DateTime     @default(now())
+  cycleCount       Int          @default(0)
+  lastRedeemedAt   DateTime?
+  lastRedeemedNote String?
+  childProfile     ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model WeeklyPlan {

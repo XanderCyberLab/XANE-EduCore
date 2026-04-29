@@ -77,52 +77,92 @@ export function TodayTaskList({ compact = false, tasks }: { compact?: boolean; t
 
   return (
     <section className="space-y-4">
-      {tasks.map((task, index) => (
-        <article key={task.id} className="rounded-[calc(var(--radius-card)+0.35rem)] border border-white/70 bg-[var(--child-surface)] p-5 shadow-[var(--shadow-soft)] md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.25rem] text-lg font-bold text-white shadow-sm" style={{ backgroundColor: task.color }}>
-                {index + 1}
-              </div>
-              <div>
-                <div className="flex flex-wrap gap-2 text-sm font-semibold text-[var(--child-muted)]">
-                  <span>{task.stepLabel}</span>
-                  <span>•</span>
-                  <span>{task.subject}</span>
-                  {task.completed ? <><span>•</span><span>Done</span></> : null}
+      {tasks.map((task, index) => {
+        const actionLabel = task.completed ? "Open again" : "Start this task";
+        const stateLabel = task.completed ? "All done" : "Ready now";
+
+        return (
+          <article
+            key={task.id}
+            className="rounded-[calc(var(--radius-card)+0.35rem)] border border-white/70 bg-[var(--child-surface)] p-5 shadow-[var(--shadow-soft)] md:p-6"
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                <div
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.25rem] text-lg font-bold text-white shadow-sm"
+                  style={{ backgroundColor: task.color }}
+                >
+                  {index + 1}
                 </div>
-                <h3 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">{task.title}</h3>
-                <p className="mt-2 max-w-2xl text-base leading-7 text-[var(--child-muted)]">{task.description}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                    <span className="rounded-full px-3 py-1.5 text-[var(--child-text)] shadow-sm" style={{ backgroundColor: `${task.color}22` }}>
+                      {task.subject}
+                    </span>
+                    <span className="rounded-full bg-white px-3 py-1.5 text-[var(--child-muted)] shadow-sm">{task.stepLabel}</span>
+                    <span
+                      className="rounded-full px-3 py-1.5 shadow-sm"
+                      style={{
+                        backgroundColor: task.completed ? "rgba(134, 239, 172, 0.35)" : "var(--child-surface-soft)",
+                        color: "var(--child-text)",
+                      }}
+                    >
+                      {stateLabel}
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-[var(--child-text)] md:text-[2rem]">{task.title}</h3>
+                  <p className="mt-2 max-w-2xl text-base leading-7 text-[var(--child-muted)]">{task.description}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.25rem] bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Kind</p>
+                  <p className="mt-1 text-base font-semibold text-[var(--child-text)]">{task.type}</p>
+                </div>
+                <div className="rounded-[1.25rem] bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Feel</p>
+                  <p className="mt-1 text-base font-semibold text-[var(--child-text)]">{task.effort}</p>
+                </div>
+                <div className="rounded-[1.25rem] bg-white p-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Stars</p>
+                  <p className="mt-1 text-base font-semibold text-[var(--child-text)]">{task.tokenValue} {task.tokenValue === 1 ? "star" : "stars"}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] bg-[var(--child-surface-soft)] p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Next step</p>
+                    <p className="mt-1 text-base font-semibold text-[var(--child-text)]">{task.encouragement}</p>
+                  </div>
+                  {compact ? (
+                    <Link
+                      href="/child/today"
+                      className="rounded-full bg-[var(--child-text)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
+                    >
+                      See today&apos;s list
+                    </Link>
+                  ) : (
+                    <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
+                      <Link
+                        href={task.href}
+                        className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--child-text)] shadow-sm transition hover:bg-white/90"
+                      >
+                        {actionLabel}
+                      </Link>
+                      <form action={completeChildTask}>
+                        <input type="hidden" name="weeklyPlanItemId" value={task.id} />
+                        <TaskCompleteButton completed={task.completed} />
+                      </form>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 md:max-w-[12rem] md:justify-end">
-              <span className="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[var(--child-text)] shadow-sm">{task.type}</span>
-              <span className="rounded-full bg-[var(--child-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--child-text)]">{task.effort}</span>
-            </div>
-          </div>
-          <div className="mt-5 flex flex-col gap-3 rounded-[1.5rem] bg-[var(--child-surface-soft)] p-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-medium text-[var(--child-text)]">{task.encouragement}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">{task.tokenValue} {task.tokenValue === 1 ? "star" : "stars"}</p>
-            </div>
-            {compact ? (
-              <Link href="/child/today" className="rounded-full bg-[var(--child-text)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90">
-                Open today
-              </Link>
-            ) : (
-              <div className="flex flex-wrap gap-3 md:justify-end">
-                <Link href={task.href} className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--child-text)] shadow-sm transition hover:bg-white/90">
-                  {task.completed ? "Open again" : "Open task"}
-                </Link>
-                <form action={completeChildTask}>
-                  <input type="hidden" name="weeklyPlanItemId" value={task.id} />
-                  <TaskCompleteButton completed={task.completed} />
-                </form>
-              </div>
-            )}
-          </div>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </section>
   );
 }

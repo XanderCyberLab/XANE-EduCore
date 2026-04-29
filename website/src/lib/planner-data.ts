@@ -124,12 +124,24 @@ export function formatRewardNote(tokensEarned: number, tokenGoal: number) {
   return `${remaining} more ${remaining === 1 ? "star" : "stars"} until reward time`;
 }
 
+function ageBandLabel(ageBand: string | null | undefined) {
+  switch (ageBand) {
+    case "EARLY_YEARS":
+      return "Early years";
+    case "UPPER_ELEMENTARY":
+      return "Upper elementary";
+    default:
+      return "Lower elementary";
+  }
+}
+
 export async function getParentPlannerData(parentUserId: string) {
   const today = new Date();
   const weekStart = startOfWeek(today);
   const weekEnd = endOfWeek(today);
 
-  const plans = await prisma.weeklyPlan.findMany({
+  const [plans, children] = await Promise.all([
+    prisma.weeklyPlan.findMany({
     where: {
       childProfile: {
         parentUserId,
@@ -157,7 +169,20 @@ export async function getParentPlannerData(parentUserId: string) {
         orderBy: [{ assignedDate: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
       },
     },
-  });
+    }),
+    prisma.childProfile.findMany({
+      where: {
+        parentUserId,
+        isArchived: false,
+      },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        nickname: true,
+        ageBand: true,
+      },
+    }),
+  ]);
 
   const allItems = plans.flatMap((plan) =>
     plan.items.map((item) => ({
@@ -191,9 +216,9 @@ export async function getParentPlannerData(parentUserId: string) {
     }));
 
   const controls: PlannerControl[] = [
-    { label: "Regenerate week", detail: "Planner editing and generation will land in a later ticket." },
-    { label: "Refresh today", detail: "Today stays readable now, even before editing controls exist." },
-    { label: "Adjust pacing", detail: "Future pacing controls can build on this persisted weekly plan data." },
+    { label: "Generate starter week", detail: "Create a calm Monday to Friday starter plan for one child using light built-in prompts." },
+    { label: "Save your own week", detail: "Write a few subject lines yourself and save them straight into the planner." },
+    { label: "Keep parent control", detail: "This stays practical and editable later, without turning into a heavy scheduler." },
   ];
 
   const headerStats: PlannerHeaderStat[] = [
@@ -248,10 +273,15 @@ export async function getParentPlannerData(parentUserId: string) {
 
   const aiNote =
     allItems.length > 0
-      ? "This planner view is now backed by persisted weekly plan data. Editing and regeneration can build on this same structure later."
-      : "Once a weekly plan is saved, this view will show each day’s stored learning blocks and printable visibility here.";
+      ? "This planner view is now backed by persisted weekly plan data. Parent-created weeks and gentle starter generation both land in the same structure for later AI assistance."
+      : "Create a parent-made week or generate a calm starter week, and this planner will immediately reflect the saved blocks and printable visibility here.";
+
+  const childrenWithPlans = new Set(plans.map((plan) => plan.childProfileId)).size;
+  const daysWithPlans = days.filter((day) => day.blocks.length > 0).length;
 
   return {
+    children,
+    defaultWeekOf: weekStart.toISOString().slice(0, 10),
     weekLabel: formatWeekLabel(weekStart),
     title: allItems.length > 0 ? "Your saved family week" : "No saved weekly plan yet",
     summary,
@@ -260,5 +290,42 @@ export async function getParentPlannerData(parentUserId: string) {
     controls,
     printables: printableItems,
     days,
+    surfaceSummary: [
+      {
+        label: "Children covered",
+        value: `${childrenWithPlans}/${children.length}`,
+        note: children.length > 0 ? "Saved weekly plans connected to child profiles." : "Add a child profile to begin planning.",
+      },
+      {
+        label: "Days with saved blocks",
+        value: String(daysWithPlans),
+        note: allItems.length > 0 ? "Visible daily structure across the current week." : "No saved day structure yet for this week.",
+      },
+      {
+        label: "Printable supports",
+        value: String(printableItems.length),
+        note: printableItems.length > 0 ? "Prep items stay visible beside the weekly plan." : "Printable prep will show up here when used.",
+      },
+    ],
+    parentGuidance:
+      allItems.length > 0
+        ? [
+            "Keep Wednesday or another midweek day lighter so the rhythm stays sustainable.",
+            "Printable prompts are there to reduce prep, not add pressure.",
+            "Hands-on and shared blocks still count as real school at home.",
+            "This structure is ready for future AI help, while keeping the parent in charge now.",
+          ]
+        : [
+            "Start with one calm week for one child rather than planning everything at once.",
+            "Use generation for a gentle draft, then adjust only what matters.",
+            "Short readable titles are enough for V1, detail can stay light.",
+            "Aim for a family rhythm, not a school-admin schedule.",
+          ],
+    plannerChildren: children.map((child) => ({
+      id: child.id,
+      nickname: child.nickname,
+      ageLabel: ageBandLabel(child.ageBand),
+      hasPlan: plans.some((plan) => plan.childProfileId === child.id),
+    })),
   };
 }

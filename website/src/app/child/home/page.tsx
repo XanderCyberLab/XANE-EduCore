@@ -64,7 +64,7 @@ export default async function ChildHomePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Next up</p>
-              <h2 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">A calm 3-task day</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">Today&apos;s learning steps</h2>
             </div>
             <Link href="/child/today" className="rounded-full bg-[var(--child-surface-soft)] px-4 py-3 text-sm font-semibold text-[var(--child-text)]">
               View all

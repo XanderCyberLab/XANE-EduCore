@@ -12,7 +12,7 @@ async function getRewardProgress(childProfileId: string) {
       title: true,
       tokenGoal: true,
       description: true,
-      createdAt: true,
+      cycleStartedAt: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -24,7 +24,7 @@ async function getRewardProgress(childProfileId: string) {
       ...(rewardPlan
         ? {
             completedAt: {
-              gte: rewardPlan.createdAt,
+              gte: rewardPlan.cycleStartedAt,
             },
           }
         : {}),

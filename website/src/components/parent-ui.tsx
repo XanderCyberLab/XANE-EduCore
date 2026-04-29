@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ParentChildEditForm } from "@/components/parent-child-edit-form";
+import { ParentPlannerCreateForm } from "@/components/parent-planner-create-form";
 import type {
   ChildDashboardProfile,
   PlannerControl,
@@ -82,6 +84,22 @@ export function SummaryCard({ label, value, note }: { label: string; value: stri
   );
 }
 
+export function ParentSurfaceSummary({
+  items,
+  columns = "md:grid-cols-3",
+}: {
+  items: Array<{ label: string; value: string; note: string }>;
+  columns?: string;
+}) {
+  return (
+    <section className={`grid gap-4 ${columns}`}>
+      {items.map((item) => (
+        <SummaryCard key={item.label} label={item.label} value={item.value} note={item.note} />
+      ))}
+    </section>
+  );
+}
+
 export function ChildOverviewCard({ child }: { child: ChildDashboardProfile }) {
   return (
     <article className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
@@ -160,13 +178,15 @@ export function ChildManagementCard({ child }: { child: ChildDashboardProfile })
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:w-[25rem]">
-            <button type="button" className="rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">{child.parentActions.editLabel}</button>
-            <button type="button" className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10">{child.parentActions.loginLabel}</button>
-            <button type="button" className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10">{child.parentActions.rewardLabel}</button>
-            <button type="button" className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10">{child.parentActions.learningLabel}</button>
+          <div className="lg:w-[25rem] rounded-3xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-200">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Parent controls</p>
+            <p className="mt-2">Edit the nickname and age band here, or rotate login details without revealing the current PIN back to the screen.</p>
           </div>
         </div>
+      </div>
+
+      <div className="border-b border-white/10 p-6">
+        <ParentChildEditForm child={{ id: child.id, name: child.name, ageLabel: child.ageLabel, username: child.username }} />
       </div>
 
       <div className="grid gap-5 p-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -329,6 +349,9 @@ export function PlannerDetailBoard({
   controls,
   printables,
   days,
+  plannerChildren,
+  defaultWeekOf,
+  parentGuidance,
 }: {
   weekLabel: string;
   title: string;
@@ -338,6 +361,9 @@ export function PlannerDetailBoard({
   controls: PlannerControl[];
   printables: PlannerPrintable[];
   days: PlannerWeekDay[];
+  plannerChildren: Array<{ id: string; nickname: string; ageLabel: string; hasPlan: boolean }>;
+  defaultWeekOf: string;
+  parentGuidance: string[];
 }) {
   return (
     <section className="space-y-6">
@@ -380,6 +406,8 @@ export function PlannerDetailBoard({
           </div>
         </div>
       </div>
+
+      <ParentPlannerCreateForm plannerChildren={plannerChildren} defaultWeekOf={defaultWeekOf} />
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
         <div className="space-y-4">
@@ -473,12 +501,7 @@ export function PlannerDetailBoard({
           <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-5 shadow-[var(--shadow-soft)]">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Parent guidance</p>
             <div className="mt-4 space-y-3">
-              {[
-                "Wednesday is intentionally lighter so the plan stays sustainable.",
-                "Math support stays tactile for Milo instead of adding more worksheet pressure.",
-                "Reading confidence gets a gentle spotlight for Junie before the weekend.",
-                "Offline and shared blocks count as real progress, not filler.",
-              ].map((note) => (
+              {parentGuidance.map((note) => (
                 <div key={note} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-300">
                   {note}
                 </div>

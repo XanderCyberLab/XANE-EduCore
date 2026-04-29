@@ -94,7 +94,7 @@ export async function getParentDashboardData(parentUserId: string, parentEmail?:
           description: true,
           tokenGoal: true,
           isActive: true,
-          createdAt: true,
+          cycleStartedAt: true,
         },
       },
       weeklyPlans: {
@@ -143,9 +143,9 @@ export async function getParentDashboardData(parentUserId: string, parentEmail?:
     const completedToday = todayItems.filter((item) => item.completions.some((completion) => completion.status === TaskCompletionStatus.COMPLETED)).length;
     const weeklyCompleted = planItems.filter((item) => item.completions.some((completion) => completion.status === TaskCompletionStatus.COMPLETED)).length;
     const activeRewardPlan = child.rewardPlan?.isActive ? child.rewardPlan : null;
-    const rewardCreatedAt = activeRewardPlan?.createdAt;
+    const rewardCycleStartedAt = activeRewardPlan?.cycleStartedAt;
     const rewardTokens = child.taskCompletions
-      .filter((completion) => !rewardCreatedAt || (completion.completedAt ?? completion.createdAt) >= rewardCreatedAt)
+      .filter((completion) => !rewardCycleStartedAt || (completion.completedAt ?? completion.createdAt) >= rewardCycleStartedAt)
       .reduce((sum, completion) => sum + completion.awardedTokens, 0);
     const rewardGoal = activeRewardPlan?.tokenGoal ?? 10;
     const rewardProgress = toPercent(rewardTokens, rewardGoal);

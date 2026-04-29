@@ -20,8 +20,8 @@ export default async function ChildTodayPage() {
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <ChildPageIntro
             badge="Today"
-            title="Your 3 things for today"
-            description="One reading moment, one math challenge, and one thinking puzzle. Nice and clear, one step at a time."
+            title="Your learning steps for today"
+            description="Nice and clear, one calm step at a time."
           />
           <div className="rounded-[1.75rem] bg-white/80 p-5 shadow-sm">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Progress</p>
