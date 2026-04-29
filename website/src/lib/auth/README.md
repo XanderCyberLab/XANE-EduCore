@@ -8,7 +8,7 @@
 
 ## Current foundation
 
-- `parent.ts`: email + password authentication path
+- `parent.ts`: email + password sign-in plus minimal in-product parent account creation
 - `child.ts`: username + PIN authentication path
 - `session.ts`: signed cookie creation, reading, and clearing
 - `guards.ts`: server-side route/data guard helpers for protected work
@@ -25,6 +25,7 @@
 ## V1 assumptions
 
 - Parent sign-in uses normalized email + password
+- Parent onboarding can create a single in-product account with immediate sign-in
 - Child sign-in uses normalized username + numeric PIN
 - Child identity remains nickname-based in the product, with username as a practical login handle
 - Final UX, rate limits, password reset, recovery, and stricter production hardening are later tickets
