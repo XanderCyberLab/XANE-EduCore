@@ -25,6 +25,7 @@ type TaskItem = {
   href: string;
   completed: boolean;
   tokenValue: number;
+  awardedTokens: number;
 };
 
 type SubjectCard = {
@@ -39,6 +40,7 @@ type SubjectCard = {
 export function TokenJarCard({ tokensEarned, tokenGoal, reward }: TokenJarCardProps) {
   const ratio = tokenGoal > 0 ? tokensEarned / tokenGoal : 0;
   const progress = `${Math.min(Math.round(ratio * 100), 100)}%`;
+  const starsLeft = Math.max(tokenGoal - tokensEarned, 0);
 
   return (
     <section className="rounded-[calc(var(--radius-card)+0.5rem)] border border-white/70 bg-[var(--child-surface)] p-5 shadow-[var(--shadow-soft)] md:p-6">
@@ -47,6 +49,9 @@ export function TokenJarCard({ tokensEarned, tokenGoal, reward }: TokenJarCardPr
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Token jar</p>
           <h2 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">{tokensEarned} of {tokenGoal} stars</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--child-muted)]">{reward.note}</p>
+          <p className="mt-3 text-sm font-semibold text-[var(--child-text)]">
+            {starsLeft === 0 ? "Your jar is full." : `${starsLeft} ${starsLeft === 1 ? "star" : "stars"} to go.`}
+          </p>
         </div>
         <div className="rounded-full bg-[rgba(109,124,255,0.08)] px-4 py-2 text-sm font-semibold text-[var(--child-text)]">{progress} full</div>
       </div>
@@ -79,7 +84,8 @@ export function TodayTaskList({ compact = false, tasks }: { compact?: boolean; t
     <section className="space-y-4">
       {tasks.map((task, index) => {
         const actionLabel = task.completed ? "Open again" : "Start this task";
-        const stateLabel = task.completed ? "All done" : "Ready now";
+        const stateLabel = task.completed ? "All done" : index === 0 ? "Do this now" : "Coming up next";
+        const nextStepLabel = task.completed ? "Finished" : index === 0 ? "Do now" : "After you finish the step before this";
 
         return (
           <article
@@ -103,7 +109,7 @@ export function TodayTaskList({ compact = false, tasks }: { compact?: boolean; t
                     <span
                       className="rounded-full px-3 py-1.5 shadow-sm"
                       style={{
-                        backgroundColor: task.completed ? "rgba(134, 239, 172, 0.35)" : "var(--child-surface-soft)",
+                        backgroundColor: task.completed ? "rgba(134, 239, 172, 0.35)" : index === 0 ? "rgba(109,124,255,0.16)" : "var(--child-surface-soft)",
                         color: "var(--child-text)",
                       }}
                     >
@@ -133,8 +139,13 @@ export function TodayTaskList({ compact = false, tasks }: { compact?: boolean; t
               <div className="rounded-[1.5rem] bg-[var(--child-surface-soft)] p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Next step</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">{nextStepLabel}</p>
                     <p className="mt-1 text-base font-semibold text-[var(--child-text)]">{task.encouragement}</p>
+                    <p className="mt-1 text-sm text-[var(--child-muted)]">
+                      {task.completed
+                        ? `You already earned ${task.awardedTokens || task.tokenValue} ${(task.awardedTokens || task.tokenValue) === 1 ? "star" : "stars"} here.`
+                        : `Finish this step to earn ${task.tokenValue} ${task.tokenValue === 1 ? "star" : "stars"}.`}
+                    </p>
                   </div>
                   {compact ? (
                     <Link

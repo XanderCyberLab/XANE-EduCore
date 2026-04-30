@@ -31,10 +31,27 @@ export default async function ChildTodayPage() {
             <div className="mt-4 h-4 rounded-full bg-[var(--child-surface-soft)] p-1">
               <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent-reading),var(--accent-math),var(--accent-thinking))]" style={{ width: progressWidth }} />
             </div>
-            <p className="mt-3 text-sm leading-6 text-[var(--child-muted)]">Finish the next two tasks to earn more stars for your jar.</p>
+            <p className="mt-3 text-sm leading-6 text-[var(--child-muted)]">
+              {childDailyPlan.remainingTasks === 0
+                ? "You finished everything for today. Nice work."
+                : childDailyPlan.nextTask
+                  ? `Do ${childDailyPlan.nextTask.title} first, then come back for the next step.`
+                  : "One calm step at a time."}
+            </p>
           </div>
         </div>
       </section>
+
+      {childDailyPlan.nextTask ? (
+        <section className="rounded-[calc(var(--radius-card)+0.35rem)] border border-white/70 bg-[var(--child-surface)] p-5 shadow-[var(--shadow-soft)] md:p-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Main focus</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[var(--child-text)]">{childDailyPlan.nextTask.title}</h2>
+          <p className="mt-2 text-base leading-7 text-[var(--child-muted)]">{childDailyPlan.nextTask.description}</p>
+          <p className="mt-3 text-sm font-semibold text-[var(--child-text)]">
+            {childDailyPlan.nextTask.subject} • {childDailyPlan.nextTask.tokenValue} {childDailyPlan.nextTask.tokenValue === 1 ? "star" : "stars"} when finished
+          </p>
+        </section>
+      ) : null}
 
       <TodayTaskList tasks={childDailyPlan.tasks} />
 

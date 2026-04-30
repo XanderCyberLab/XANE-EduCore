@@ -22,6 +22,7 @@ export default async function ParentPlannerPage() {
         plannerChildren={planner.plannerChildren}
         defaultWeekOf={planner.defaultWeekOf}
         parentGuidance={planner.parentGuidance}
+        savedPlans={planner.savedPlans}
       />
     </main>
   );

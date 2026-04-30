@@ -24,6 +24,9 @@ export default async function ChildRewardsPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Next reward</p>
           <p className="mt-2 text-2xl font-semibold text-[var(--child-text)]">{childDailyPlan.reward.title}</p>
           <p className="mt-2 text-base leading-7 text-[var(--child-muted)]">{childDailyPlan.reward.note}</p>
+          <p className="mt-3 text-sm font-semibold text-[var(--child-text)]">
+            {childDailyPlan.remainingTasks === 0 ? "You finished today’s learning steps." : `${childDailyPlan.remainingTasks} ${childDailyPlan.remainingTasks === 1 ? "step is" : "steps are"} still left for today.`}
+          </p>
         </div>
         <div className="mt-5">
           <Link href="/child/today" className="inline-flex rounded-full bg-[var(--child-text)] px-5 py-3 text-sm font-semibold text-white">

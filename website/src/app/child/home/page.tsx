@@ -34,8 +34,9 @@ export default async function ChildHomePage() {
                 <p className="mt-1 text-sm text-[var(--child-muted)]">already finished</p>
               </div>
               <div className="rounded-[1.5rem] bg-white/90 p-4 shadow-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Streak</p>
-                <p className="mt-2 text-xl font-semibold text-[var(--child-text)]">{childDailyPlan.streakLabel}</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Left</p>
+                <p className="mt-2 text-3xl font-semibold text-[var(--child-text)]">{childDailyPlan.remainingTasks}</p>
+                <p className="mt-1 text-sm text-[var(--child-muted)]">one at a time</p>
               </div>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -51,6 +52,13 @@ export default async function ChildHomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--child-muted)]">Today&apos;s focus</p>
             <h2 className="mt-3 text-3xl font-semibold text-[var(--child-text)]">{childDailyPlan.focusTitle}</h2>
             <p className="mt-3 text-base leading-7 text-[var(--child-muted)]">{childDailyPlan.focusNote}</p>
+            {childDailyPlan.nextTask ? (
+              <div className="mt-5 rounded-[1.75rem] bg-white/80 p-4 shadow-sm">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Do now</p>
+                <p className="mt-2 text-xl font-semibold text-[var(--child-text)]">{childDailyPlan.nextTask.title}</p>
+                <p className="mt-1 text-sm text-[var(--child-muted)]">{childDailyPlan.nextTask.subject} • {childDailyPlan.nextTask.tokenValue} {childDailyPlan.nextTask.tokenValue === 1 ? "star" : "stars"}</p>
+              </div>
+            ) : null}
             <div className="mt-5 rounded-[1.75rem] bg-white/80 p-4 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--child-muted)]">Reward path</p>
               <p className="mt-2 text-xl font-semibold text-[var(--child-text)]">{childDailyPlan.reward.title}</p>

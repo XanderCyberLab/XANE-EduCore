@@ -18,6 +18,8 @@ export function ParentPlannerCreateForm({
   plannerChildren: Array<{ id: string; nickname: string; ageLabel: string; hasPlan: boolean }>;
   defaultWeekOf: string;
 }) {
+  const childrenWithPlans = plannerChildren.filter((child) => child.hasPlan).length;
+
   const [state, formAction] = useActionState(saveWeeklyPlanAction, initialState);
 
   return (
@@ -30,7 +32,16 @@ export function ParentPlannerCreateForm({
         </p>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-[var(--parent-muted)]">
+        <p className="font-semibold text-white">Practical authoring rules</p>
+        <ul className="mt-2 space-y-1">
+          <li>Use the Monday date for the exact week you want to save.</li>
+          <li>Add up to 5 non-empty lines per subject, one line per weekday.</li>
+          <li>Leave a subject blank if you want EduCore to fill a gentle starter version.</li>
+        </ul>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div>
           <label htmlFor="childId" className="text-sm font-semibold text-white">Child</label>
           <select id="childId" name="childId" defaultValue={state.values?.childId ?? ""} className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none">
@@ -47,7 +58,7 @@ export function ParentPlannerCreateForm({
         <div>
           <label htmlFor="weekOf" className="text-sm font-semibold text-white">Week of</label>
           <input id="weekOf" name="weekOf" type="date" defaultValue={state.values?.weekOf ?? defaultWeekOf} className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none" />
-          <p className="mt-2 text-xs text-[var(--parent-muted)]">Use the Monday date for the week you want to plan.</p>
+          <p className="mt-2 text-xs text-[var(--parent-muted)]">Use a Monday date. EduCore will only save the week you explicitly choose.</p>
           <FieldError message={state.fields?.weekOf} />
         </div>
       </div>
@@ -64,6 +75,36 @@ export function ParentPlannerCreateForm({
           defaultValue={state.values?.summary ?? ""}
         />
         <FieldError message={state.fields?.summary} />
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+          <p className="text-sm font-semibold text-white">Current week coverage</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">
+            {childrenWithPlans > 0
+              ? `${childrenWithPlans} of ${plannerChildren.length} ${plannerChildren.length === 1 ? "child already has" : "children already have"} a saved week in the current planner view.`
+              : "No child has a saved week in the current planner view yet."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {plannerChildren.map((child) => (
+              <span
+                key={child.id}
+                className={`rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] ${child.hasPlan ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100" : "border-white/10 bg-slate-950/20 text-[var(--parent-muted)]"}`}
+              >
+                {child.nickname} {child.hasPlan ? "• saved week" : "• open"}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+          <p className="text-sm font-semibold text-white">What happens when you save</p>
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-[var(--parent-muted)]">
+            <li>Saved plan lines become the weekly blocks the child flow already reads.</li>
+            <li>Starter generation fills missing subjects with built-in calm prompts.</li>
+            <li>Weeks with recorded completions stay protected from unsafe overwrite.</li>
+          </ul>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
@@ -90,6 +131,7 @@ export function ParentPlannerCreateForm({
           <div key={field.key} className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
             <label htmlFor={field.key} className="text-sm font-semibold text-white">{field.label}</label>
             <p className="mt-2 text-xs leading-5 text-[var(--parent-muted)]">{field.hint}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-400">Monday to Friday, up to 5 saved lines</p>
             <textarea
               id={field.key}
               name={field.key}

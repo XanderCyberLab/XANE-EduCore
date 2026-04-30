@@ -1,4 +1,4 @@
-import { hashSecret, normalizeEmail, normalizePin, normalizeUsername } from "../src/lib/auth/crypto.ts";
+import { hashSecret, normalizeEmail, normalizePin, normalizeUsername } from "../src/lib/auth/crypto";
 import {
   ChildAgeBand,
   PlanItemType,
@@ -12,7 +12,7 @@ import {
   requireDatabaseUrl,
   startOfDay,
   startOfWeek,
-} from "./_shared.ts";
+} from "./_shared";
 
 function parsePositiveInt(value: string | undefined, fallback: number) {
   const parsed = Number(value);

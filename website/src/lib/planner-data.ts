@@ -189,6 +189,8 @@ export async function getParentPlannerData(parentUserId: string) {
       ...item,
       childName: plan.childProfile.nickname,
       planStatus: plan.status,
+      weeklyPlanSummary: plan.summary,
+      weeklyPlanId: plan.id,
     })),
   );
 
@@ -214,6 +216,48 @@ export async function getParentPlannerData(parentUserId: string) {
       subject: getSubjectMeta(item.subject).label,
       note: item.details ?? "Prepared for flexible offline or printable use.",
     }));
+
+  const completionCountByPlanId = new Map<string, number>();
+  const itemIds = allItems.map((item) => item.id);
+
+  if (itemIds.length > 0) {
+    const completionsByItem = await prisma.taskCompletion.groupBy({
+      by: ["weeklyPlanItemId"],
+      where: {
+        status: TaskCompletionStatus.COMPLETED,
+        weeklyPlanItemId: {
+          in: itemIds,
+        },
+      },
+      _count: {
+        weeklyPlanItemId: true,
+      },
+    });
+
+    const completionCountByItemId = new Map(
+      completionsByItem.map((row) => [row.weeklyPlanItemId, row._count.weeklyPlanItemId]),
+    );
+
+    for (const item of allItems) {
+      const count = completionCountByItemId.get(item.id) ?? 0;
+      completionCountByPlanId.set(item.weeklyPlanId, (completionCountByPlanId.get(item.weeklyPlanId) ?? 0) + count);
+    }
+  }
+
+  const savedPlans = plans.map((plan) => {
+    const planItems = allItems.filter((item) => item.weeklyPlanId === plan.id);
+    const subjectLabels = Array.from(new Set(planItems.map((item) => getSubjectMeta(item.subject).label)));
+
+    return {
+      id: plan.id,
+      childName: plan.childProfile.nickname,
+      summary: plan.summary || `A saved week for ${plan.childProfile.nickname}.`,
+      blockCount: planItems.length,
+      completionCount: completionCountByPlanId.get(plan.id) ?? 0,
+      printableCount: planItems.filter((item) => item.isPrintable || item.itemType === PlanItemType.PRINTABLE).length,
+      subjectLabels,
+    };
+  });
 
   const controls: PlannerControl[] = [
     { label: "Generate starter week", detail: "Create a calm Monday to Friday starter plan for one child using light built-in prompts." },
@@ -327,5 +371,6 @@ export async function getParentPlannerData(parentUserId: string) {
       ageLabel: ageBandLabel(child.ageBand),
       hasPlan: plans.some((plan) => plan.childProfileId === child.id),
     })),
+    savedPlans,
   };
 }

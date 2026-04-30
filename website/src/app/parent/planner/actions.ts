@@ -28,7 +28,15 @@ function parseWeekStart(value: string) {
   if (!value) return null;
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return null;
+  if (parsed.getDay() !== 1) return null;
   return startOfWeek(parsed);
+}
+
+function countPlanLines(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean).length;
 }
 
 function splitPlanLines(value: string) {
@@ -118,8 +126,11 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
   const weekStart = parseWeekStart(weekOfInput);
 
   if (!childId) fields.childId = "Choose a child for this weekly plan.";
-  if (!weekStart) fields.weekOf = "Pick a valid week start date.";
+  if (!weekStart) fields.weekOf = "Pick a valid Monday date for the week you want to plan.";
   if (summary.length > 280) fields.summary = "Keep the weekly note under 280 characters so it stays readable.";
+  if (countPlanLines(readingPlan) > 5) fields.readingPlan = "Keep reading to 5 non-empty lines so each weekday stays clear.";
+  if (countPlanLines(mathPlan) > 5) fields.mathPlan = "Keep math to 5 non-empty lines so each weekday stays clear.";
+  if (countPlanLines(thinkingPlan) > 5) fields.thinkingPlan = "Keep thinking to 5 non-empty lines so each weekday stays clear.";
 
   const providedLines = {
     reading: splitPlanLines(readingPlan),

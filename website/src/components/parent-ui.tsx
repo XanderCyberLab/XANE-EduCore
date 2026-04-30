@@ -352,6 +352,7 @@ export function PlannerDetailBoard({
   plannerChildren,
   defaultWeekOf,
   parentGuidance,
+  savedPlans,
 }: {
   weekLabel: string;
   title: string;
@@ -364,6 +365,7 @@ export function PlannerDetailBoard({
   plannerChildren: Array<{ id: string; nickname: string; ageLabel: string; hasPlan: boolean }>;
   defaultWeekOf: string;
   parentGuidance: string[];
+  savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: string[] }>;
 }) {
   return (
     <section className="space-y-6">
@@ -469,6 +471,45 @@ export function PlannerDetailBoard({
         </div>
 
         <aside className="space-y-4">
+          <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-5 shadow-[var(--shadow-soft)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Saved week management</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">See what is already stored</h2>
+            <div className="mt-5 space-y-3">
+              {savedPlans.length > 0 ? (
+                savedPlans.map((plan) => (
+                  <div key={plan.id} className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-white">{plan.childName}</p>
+                      <span className="rounded-full border border-white/10 bg-slate-950/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--parent-muted)]">
+                        {plan.blockCount} blocks
+                      </span>
+                      {plan.completionCount > 0 ? (
+                        <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100">
+                          {plan.completionCount} completion{plan.completionCount === 1 ? "" : "s"}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">{plan.summary}</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--parent-muted)]">
+                      {plan.subjectLabels.map((label) => (
+                        <span key={`${plan.id}-${label}`} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                          {label}
+                        </span>
+                      ))}
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                        {plan.printableCount} printable{plan.printableCount === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-3xl border border-dashed border-white/10 bg-[var(--parent-surface-soft)] p-4 text-sm leading-6 text-[var(--parent-muted)]">
+                  No child has a saved plan for this week yet.
+                </div>
+              )}
+            </div>
+          </section>
+
           <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-5 shadow-[var(--shadow-soft)]">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Printable visibility</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Prep once, then keep the week moving</h2>

@@ -174,6 +174,8 @@ export async function getChildDashboardData(childProfileId: string) {
 
   const totalTasks = tasksWithCompletion.length;
   const completedTasks = tasksWithCompletion.filter((task) => task.completed).length;
+  const remainingTasks = Math.max(totalTasks - completedTasks, 0);
+  const nextTask = tasksWithCompletion.find((task) => !task.completed) ?? tasksWithCompletion[0] ?? null;
   const tokensEarned = rewardProgress.tokensEarned;
   const tokenGoal = rewardProgress.rewardPlan?.tokenGoal ?? Math.max(totalTasks, 1) * 3;
   const rewardTitle = rewardProgress.rewardPlan?.title ?? "A parent-picked reward";
@@ -197,13 +199,25 @@ export async function getChildDashboardData(childProfileId: string) {
     childName: child.nickname,
     greeting: totalTasks > 0 ? "Ready for your calm learning day?" : "Your learning space is ready when your parent adds today’s plan.",
     focusTitle: totalTasks > 0 ? `${totalTasks} little ${totalTasks === 1 ? "win" : "wins"} for today` : "Today is clear and quiet",
-    focusNote: totalTasks > 0 ? "We will take one gentle learning step at a time." : "There are no tasks here yet. A parent can add today’s plan when ready.",
+    focusNote:
+      totalTasks === 0
+        ? "There are no tasks here yet. A parent can add today’s plan when ready."
+        : remainingTasks === 0
+          ? "You finished your learning steps for today. You can look back or check your stars."
+          : `Your main job right now is ${nextTask?.title ?? "the next calm step"}.`,
     completedTasks,
     totalTasks,
+    remainingTasks,
+    nextTask,
     tokensEarned,
     tokenGoal,
     streakLabel: completedTasks > 0 ? `${completedTasks} done today` : "Fresh start",
-    aiHint: totalTasks > 0 ? "Your learning path was gently picked just for today." : "When a plan is ready, your next steps will show up here.",
+    aiHint:
+      totalTasks === 0
+        ? "When a plan is ready, your next steps will show up here."
+        : remainingTasks === 0
+          ? "Your reward jar is ready for a happy check-in."
+          : `${remainingTasks} ${remainingTasks === 1 ? "step is" : "steps are"} still waiting, one at a time.`,
     reward: {
       title: rewardTitle,
       note: rewardNote,
