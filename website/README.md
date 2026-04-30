@@ -5,7 +5,7 @@ This is the EduCore website app, built with Next.js, TypeScript, Tailwind, Prism
 1. Copy `.env.example` to `.env`.
 2. Make sure your local PostgreSQL database is running.
 3. Apply migrations and generate the Prisma client.
-4. Bootstrap a safe fake parent account, child account, reward, and starter weekly plan, or create the first parent account inside the app after startup.
+4. Bootstrap a safe fake parent account, child account, reward, and starter weekly plan, or create a parent account inside the app after startup.
 5. Start the development server.
 
 ```bash
@@ -158,7 +158,7 @@ npm run child:create -- \
 
 - Parent auth uses an HTTP-only signed session cookie.
 - Protected `/parent/*` routes redirect to `/parent/login` when no valid parent session is present.
-- `/parent/login` now supports both sign-in and a minimal in-product parent account creation flow for first-time setup.
+- `/parent/login` now supports both sign-in and a minimal in-product parent account creation flow, including creating additional parent accounts later.
 - Creating or resetting a parent with `npm run parent:create` or `npm run db:bootstrap` bumps `sessionVersion`, which cleanly invalidates older parent sessions.
 
 ## Development server

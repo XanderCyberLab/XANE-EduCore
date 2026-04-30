@@ -82,8 +82,8 @@ export function ParentLoginForm({ hasExistingParentAccount }: { hasExistingParen
             {isCreateMode
               ? "This creates a parent account on this EduCore install and signs you in right away."
               : hasExistingParentAccount
-                ? "Use the parent email and password already set up for this EduCore install."
-                : "If this is your first time here, create the first parent account to begin setup."}
+                ? "Use an existing parent email and password, or switch tabs to create another parent account."
+                : "If this is your first time here, create a parent account to begin setup."}
           </p>
         </div>
       </form>

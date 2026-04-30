@@ -62,22 +62,13 @@ export async function createParentAccount(email: string, password: string, timez
     return { ok: false as const, error: "Please enter your email and password." };
   }
 
-  const [existingParentForEmail, anyExistingParent] = await Promise.all([
-    prisma.parentUser.findUnique({
-      where: { email: normalizedEmail },
-      select: { id: true },
-    }),
-    prisma.parentUser.findFirst({
-      select: { id: true },
-    }),
-  ]);
+  const existingParentForEmail = await prisma.parentUser.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  });
 
   if (existingParentForEmail) {
     return { ok: false as const, error: "That email already has a parent account. Sign in instead." };
-  }
-
-  if (anyExistingParent) {
-    return { ok: false as const, error: "A parent account already exists for this EduCore install. Sign in instead." };
   }
 
   const parent = await prisma.parentUser.create({

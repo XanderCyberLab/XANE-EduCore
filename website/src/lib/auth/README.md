@@ -25,7 +25,7 @@
 ## V1 assumptions
 
 - Parent sign-in uses normalized email + password
-- Parent onboarding can create a single in-product account with immediate sign-in
+- Parent onboarding can create parent accounts in-product with immediate sign-in
 - Child sign-in uses normalized username + numeric PIN
 - Child identity remains nickname-based in the product, with username as a practical login handle
 - Final UX, rate limits, password reset, recovery, and stricter production hardening are later tickets
