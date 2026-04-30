@@ -159,6 +159,7 @@ npm run child:create -- \
 - Parent auth uses an HTTP-only signed session cookie.
 - Protected `/parent/*` routes redirect to `/parent/login` when no valid parent session is present.
 - `/parent/login` now supports both sign-in and a minimal in-product parent account creation flow, including a visibly distinct create-account mode for adding additional parent accounts later.
+- After first-child setup, the parent dashboard, onboarding return state, and children space now point more clearly toward the next practical steps: planning the first week, checking rewards, and reviewing child basics.
 - Creating or resetting a parent with `npm run parent:create` or `npm run db:bootstrap` bumps `sessionVersion`, which cleanly invalidates older parent sessions.
 
 ## Development server

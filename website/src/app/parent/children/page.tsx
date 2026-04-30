@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ParentChildCreateForm } from "@/components/parent-child-create-form";
 import { ChildManagementCard, ParentHero, ParentSurfaceSummary } from "@/components/parent-ui";
 import { requireParentSession } from "@/lib/auth/guards";
@@ -69,6 +70,32 @@ export default async function ParentChildrenPage() {
           </div>
         </div>
       </section>
+
+      {data.children.length > 0 ? (
+        <section className="grid gap-4 rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)] xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">After first-child setup</p>
+            <h2 className="text-2xl font-semibold text-white">Use this page to confirm the basics, then move forward</h2>
+            <p className="max-w-3xl text-sm leading-7 text-[var(--parent-muted)]">
+              This page is best for checking child details, login readiness, and reward connection. Once those look right, the most useful next move is usually the weekly planner.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-1">
+            <Link href="/parent/planner" className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 transition hover:bg-white/10">
+              <p className="text-sm font-semibold text-white">Open planner</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Turn the saved child profile into a real week.</p>
+            </Link>
+            <Link href="/parent/rewards" className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 transition hover:bg-white/10">
+              <p className="text-sm font-semibold text-white">Review rewards</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Make sure the reward path is visible before daily use starts.</p>
+            </Link>
+            <Link href="/parent/dashboard" className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 transition hover:bg-white/10">
+              <p className="text-sm font-semibold text-white">Back to dashboard</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Return to the calm family overview after setup checks.</p>
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <ParentChildCreateForm />
 

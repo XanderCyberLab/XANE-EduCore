@@ -19,22 +19,39 @@ export default async function ParentOnboardingPage() {
         <ParentPageIntro
           eyebrow="Family setup"
           title="Your family already has a child profile"
-          description="You can head into the dashboard, or open the children space if you want to add another profile before planning the week."
+          description="The next useful step is usually planning the first week, then checking rewards or child details only where needed."
         />
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Link
-            href="/parent/dashboard"
-            className="rounded-3xl border border-white/10 bg-white px-5 py-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-          >
-            Go to dashboard
-          </Link>
-          <Link
-            href="/parent/children"
-            className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] px-5 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
-          >
-            Manage children
-          </Link>
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+            <Link
+              href="/parent/dashboard"
+              className="rounded-3xl border border-white/10 bg-white px-5 py-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+            >
+              Go to dashboard
+            </Link>
+            <Link
+              href="/parent/planner"
+              className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] px-5 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Plan the first week
+            </Link>
+            <Link
+              href="/parent/children"
+              className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] px-5 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Manage children
+            </Link>
+          </div>
+
+          <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface-soft)] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Recommended follow-through</p>
+            <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--parent-muted)]">
+              <li>Save a simple weekly plan so the child flow has real daily tasks.</li>
+              <li>Check reward visibility early, before the first school-day rhythm starts.</li>
+              <li>Return to children only if nickname, login, or age-band details need adjustment.</li>
+            </ul>
+          </section>
         </div>
       </main>
     );
