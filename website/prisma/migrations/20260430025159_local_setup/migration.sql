@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "RewardPlan" ADD COLUMN     "cycleCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "cycleStartedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "lastRedeemedAt" TIMESTAMP(3),
+ADD COLUMN     "lastRedeemedNote" TEXT;

@@ -12,11 +12,11 @@ export default async function ParentLoginPage() {
         title={hasExistingParentAccount ? "Welcome back" : "Create a parent account"}
         description={
           hasExistingParentAccount
-            ? "Sign in with an existing parent account, or create a new one from this screen."
-            : "Start EduCore from inside the product by creating a parent account, then continue into the dashboard without relying on bootstrap scripts."
+            ? "Choose the path you need: sign in with an existing parent account, or create another one without switching a shared form mode."
+            : "Start EduCore by creating a parent account, while keeping a separate sign-in path available for any existing parent account."
         }
       />
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <ParentLoginForm hasExistingParentAccount={hasExistingParentAccount} />
         <div className="space-y-4 rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-5 text-sm leading-7 text-[var(--parent-muted)]">
           <p>
@@ -26,8 +26,8 @@ export default async function ParentLoginPage() {
             <p className="text-sm font-semibold text-[var(--parent-text)]">Included here</p>
             <PlaceholderList
               items={[
+                "Keep sign-in and create-account actions visibly separate",
                 "Create parent accounts directly inside the product",
-                "Sign in with the same parent auth foundation",
                 "Leave recovery and broader account tools for later tickets",
               ]}
             />
