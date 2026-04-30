@@ -6,22 +6,37 @@ import { AuthSubmitButton } from "@/components/auth-submit-button";
 
 const initialState: CreateChildProfileState = {};
 
+type ParentChildCreateFormProps = {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  redirectTo?: string;
+  submitLabel?: string;
+  pendingLabel?: string;
+};
+
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="mt-2 text-xs text-rose-300">{message}</p>;
 }
 
-export function ParentChildCreateForm() {
+export function ParentChildCreateForm({
+  eyebrow = "Add child",
+  title = "Create a calm, privacy-first child profile",
+  description = "Keep setup light. Just add the nickname they know, a simple username, and a parent-managed PIN for child login.",
+  redirectTo,
+  submitLabel = "Create child profile",
+  pendingLabel = "Creating profile...",
+}: ParentChildCreateFormProps = {}) {
   const [state, formAction] = useActionState(createChildProfileAction, initialState);
 
   return (
     <form action={formAction} className="space-y-5 rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
+      {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
       <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Add child</p>
-        <h2 className="text-2xl font-semibold text-white">Create a calm, privacy-first child profile</h2>
-        <p className="max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">
-          Keep setup light. Just add the nickname they know, a simple username, and a parent-managed PIN for child login.
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">{eyebrow}</p>
+        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+        <p className="max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">{description}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -113,7 +128,7 @@ export function ParentChildCreateForm() {
       {state.error ? <p className="text-sm text-rose-300">{state.error}</p> : null}
       {state.success ? <p className="text-sm text-emerald-300">{state.success}</p> : null}
 
-      <AuthSubmitButton label="Create child profile" pendingLabel="Creating profile..." className="bg-white text-slate-950" />
+      <AuthSubmitButton label={submitLabel} pendingLabel={pendingLabel} className="bg-white text-slate-950" />
     </form>
   );
 }

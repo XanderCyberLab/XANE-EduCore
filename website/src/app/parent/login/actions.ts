@@ -48,5 +48,5 @@ export async function parentCreateAccountAction(_: ParentLoginState, formData: F
     return { error: result.error };
   }
 
-  redirect("/parent/dashboard");
+  redirect("/parent/onboarding");
 }

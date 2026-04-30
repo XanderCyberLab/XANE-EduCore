@@ -20,7 +20,7 @@ export default async function ParentLoginPage() {
         <ParentLoginForm hasExistingParentAccount={hasExistingParentAccount} />
         <div className="space-y-4 rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-5 text-sm leading-7 text-[var(--parent-muted)]">
           <p>
-            This flow stays intentionally lean: parent accounts are created directly from the login surface, each uses the same signed session foundation, and the handoff into the dashboard stays calm for self-hosted setup.
+            This flow stays intentionally lean: parent accounts are created directly from the login surface, each uses the same signed session foundation, and new families get a light first-child setup handoff instead of a heavy onboarding wizard.
           </p>
           <div>
             <p className="text-sm font-semibold text-[var(--parent-text)]">Included here</p>

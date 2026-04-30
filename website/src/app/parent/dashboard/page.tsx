@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ChildOverviewCard,
   ParentHero,
@@ -8,12 +9,18 @@ import {
 import { requireParentSession } from "@/lib/auth/guards";
 import { getParentDashboardData } from "@/lib/parent-dashboard";
 
-export default async function ParentDashboardPage() {
+export default async function ParentDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ onboarding?: string }>;
+}) {
   const session = await requireParentSession();
   const { familySummary, weeklySnapshot, children, plannerPreview, rewardHighlights, parentName, welcomeLabel } = await getParentDashboardData(
     session.parentUserId,
     session.email,
   );
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const onboardingState = resolvedSearchParams.onboarding;
 
   return (
     <main className="space-y-6 pb-8">
@@ -46,6 +53,46 @@ export default async function ParentDashboardPage() {
           },
         ]}
       />
+
+      {onboardingState === "child-created" ? (
+        <section className="rounded-[var(--radius-card)] border border-emerald-400/20 bg-emerald-400/10 p-5 shadow-[var(--shadow-soft)]">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">First child ready</p>
+          <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <p className="max-w-3xl text-sm leading-7 text-emerald-50">
+              Your family setup is now grounded in a real child profile. From here, you can review children, shape a weekly plan, or leave the dashboard calm until you are ready for the next step.
+            </p>
+            <Link href="/parent/children" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
+              Review child profile
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {children.length === 0 ? (
+        <section className="grid gap-4 rounded-[var(--radius-card)] border border-dashed border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)] lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">First family setup</p>
+            <h2 className="text-2xl font-semibold text-white">
+              {onboardingState === "child-created" ? "Your first child profile is ready" : "Add your first child to unlock the family flow"}
+            </h2>
+            <p className="max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">
+              {onboardingState === "child-created"
+                ? "You can review the dashboard now, then head into children or planning whenever you want to shape the next step."
+                : onboardingState === "skipped"
+                  ? "You skipped setup for now, which is fine. When you are ready, adding one child profile is the smallest step that connects login, planning, and rewards."
+                  : "A single child profile gives EduCore enough context to make daily plans, rewards, and child login feel grounded without turning setup into a long wizard."}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 lg:items-start lg:justify-center">
+            <Link href="/parent/onboarding" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
+              Add first child
+            </Link>
+            <Link href="/parent/children" className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10">
+              Open children space
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
         <div className="space-y-6">

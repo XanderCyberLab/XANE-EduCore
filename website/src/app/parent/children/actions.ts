@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ChildAgeBand } from "@/generated/prisma/client";
 import { requireParentSession } from "@/lib/auth/guards";
 import { hashSecret, normalizePin, normalizeUsername } from "@/lib/auth/crypto";
@@ -51,6 +52,7 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   const pinInput = String(formData.get("pin") ?? "");
   const pinConfirmInput = String(formData.get("pinConfirm") ?? "");
   const ageBandInput = String(formData.get("ageBand") ?? "").trim();
+  const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
   const username = normalizeUsername(usernameInput);
   const pin = normalizePin(pinInput);
@@ -111,6 +113,10 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   });
 
   revalidateParentChildrenSurfaces();
+
+  if (redirectTo && redirectTo.startsWith("/parent/")) {
+    redirect(redirectTo);
+  }
 
   return {
     success: `${nickname} is ready for child login.`,
