@@ -10,6 +10,9 @@ type PlannerFormFields = {
   childId?: string;
   weekOf?: string;
   summary?: string;
+  scopeMode?: string;
+  scopeStartDay?: string;
+  scopeEndDay?: string;
   readingPlan?: string;
   mathPlan?: string;
   thinkingPlan?: string;
@@ -23,6 +26,9 @@ export type SaveWeeklyPlanState = {
 };
 
 const weekdayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const;
+const weekdayIndexes = Object.fromEntries(weekdayLabels.map((label, index) => [label, index])) as Record<(typeof weekdayLabels)[number], number>;
+
+type ScopeMode = "full-week" | "single-day" | "day-range";
 
 function parseWeekStart(value: string) {
   if (!value) return null;
@@ -30,6 +36,26 @@ function parseWeekStart(value: string) {
   if (Number.isNaN(parsed.getTime())) return null;
   if (parsed.getDay() !== 1) return null;
   return startOfWeek(parsed);
+}
+
+function parseScopeMode(value: string): ScopeMode {
+  if (value === "single-day" || value === "day-range") return value;
+  return "full-week";
+}
+
+function normalizeScopeDays(scopeMode: ScopeMode, startDay: string, endDay: string) {
+  const startIndex = weekdayIndexes[startDay as keyof typeof weekdayIndexes];
+  const endIndex = weekdayIndexes[endDay as keyof typeof weekdayIndexes];
+
+  if (scopeMode === "full-week") {
+    return { startIndex: 0, endIndex: weekdayLabels.length - 1 };
+  }
+
+  if (startIndex === undefined) return null;
+  if (scopeMode === "single-day") return { startIndex, endIndex: startIndex };
+  if (endIndex === undefined || endIndex < startIndex) return null;
+
+  return { startIndex, endIndex };
 }
 
 function countPlanLines(value: string) {
@@ -109,6 +135,9 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
   const childId = String(formData.get("childId") ?? "").trim();
   const weekOfInput = String(formData.get("weekOf") ?? "").trim();
   const summary = String(formData.get("summary") ?? "").trim();
+  const scopeMode = parseScopeMode(String(formData.get("scopeMode") ?? "full-week").trim());
+  const scopeStartDay = String(formData.get("scopeStartDay") ?? "Monday").trim();
+  const scopeEndDay = String(formData.get("scopeEndDay") ?? "Friday").trim();
   const readingPlan = String(formData.get("readingPlan") ?? "").trim();
   const mathPlan = String(formData.get("mathPlan") ?? "").trim();
   const thinkingPlan = String(formData.get("thinkingPlan") ?? "").trim();
@@ -119,15 +148,20 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
     childId,
     weekOf: weekOfInput,
     summary,
+    scopeMode,
+    scopeStartDay,
+    scopeEndDay,
     readingPlan,
     mathPlan,
     thinkingPlan,
   };
   const weekStart = parseWeekStart(weekOfInput);
+  const scopeDays = normalizeScopeDays(scopeMode, scopeStartDay, scopeEndDay);
 
   if (!childId) fields.childId = "Choose a child for this weekly plan.";
   if (!weekStart) fields.weekOf = "Pick a valid Monday date for the week you want to plan.";
   if (summary.length > 280) fields.summary = "Keep the weekly note under 280 characters so it stays readable.";
+  if (!scopeDays) fields.scopeStartDay = "Choose a valid planner day scope.";
   if (countPlanLines(readingPlan) > 5) fields.readingPlan = "Keep reading to 5 non-empty lines so each weekday stays clear.";
   if (countPlanLines(mathPlan) > 5) fields.mathPlan = "Keep math to 5 non-empty lines so each weekday stays clear.";
   if (countPlanLines(thinkingPlan) > 5) fields.thinkingPlan = "Keep thinking to 5 non-empty lines so each weekday stays clear.";
@@ -139,7 +173,7 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
   };
 
   if (intent === "save" && providedLines.reading.length + providedLines.math.length + providedLines.thinking.length === 0) {
-    fields.readingPlan = "Add at least one plan line, or use Generate starter week instead.";
+    fields.readingPlan = "Add at least one plan line in the subjects you want to change, or use Generate starter week instead.";
   }
 
   if (Object.keys(fields).length > 0) {
@@ -163,42 +197,18 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
     },
   });
 
-  if (!child || !weekStart) {
+  if (!child || !weekStart || !scopeDays) {
     return {
       error: "That child profile could not be found for this parent.",
       values,
     };
   }
 
-  const readingLines = providedLines.reading.length > 0 ? providedLines.reading : defaultPlanLines(SubjectArea.READING, child.ageBand);
-  const mathLines = providedLines.math.length > 0 ? providedLines.math : defaultPlanLines(SubjectArea.MATH, child.ageBand);
-  const thinkingLines = providedLines.thinking.length > 0 ? providedLines.thinking : defaultPlanLines(SubjectArea.CRITICAL_THINKING, child.ageBand);
-
-  const plansBySubject: Array<{ subject: SubjectArea; lines: string[] }> = [
-    { subject: SubjectArea.READING, lines: readingLines },
-    { subject: SubjectArea.MATH, lines: mathLines },
-    { subject: SubjectArea.CRITICAL_THINKING, lines: thinkingLines },
-  ];
-
-  const items = plansBySubject.flatMap(({ subject, lines }) =>
-    lines.map((title, index) => {
-      const assignedDate = new Date(weekStart);
-      assignedDate.setDate(weekStart.getDate() + index);
-      const itemType = itemTypeForDay(subject, index);
-
-      return {
-        subject,
-        assignedDate,
-        title,
-        details: itemDetails(subject, title, index),
-        itemType,
-        sortOrder: index,
-        tokenValue: 1,
-        isPrintable: itemType === PlanItemType.PRINTABLE,
-        isOffline: itemType === PlanItemType.OFFLINE,
-      };
-    }),
-  );
+  const defaultLinesBySubject = {
+    reading: defaultPlanLines(SubjectArea.READING, child.ageBand),
+    math: defaultPlanLines(SubjectArea.MATH, child.ageBand),
+    thinking: defaultPlanLines(SubjectArea.CRITICAL_THINKING, child.ageBand),
+  };
 
   const existing = await prisma.weeklyPlan.findUnique({
     where: {
@@ -209,8 +219,20 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
     },
     select: {
       id: true,
+      summary: true,
       items: {
+        orderBy: [{ assignedDate: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
         select: {
+          id: true,
+          subject: true,
+          assignedDate: true,
+          title: true,
+          details: true,
+          itemType: true,
+          sortOrder: true,
+          tokenValue: true,
+          isPrintable: true,
+          isOffline: true,
           _count: {
             select: {
               completions: true,
@@ -221,17 +243,95 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
     },
   });
 
-  const existingCompletionCount = existing?.items.reduce((sum, item) => sum + item._count.completions, 0) ?? 0;
+  const scopeItemCount = scopeDays.endIndex - scopeDays.startIndex + 1;
+  const subjectConfigs: Array<{ key: keyof typeof providedLines; subject: SubjectArea }> = [
+    { key: "reading", subject: SubjectArea.READING },
+    { key: "math", subject: SubjectArea.MATH },
+    { key: "thinking", subject: SubjectArea.CRITICAL_THINKING },
+  ];
 
-  if (existing && existingCompletionCount > 0) {
+  const shouldReplaceSubject = (key: keyof typeof providedLines) => intent === "generate" || providedLines[key].length > 0;
+
+  const scopedItems = subjectConfigs.flatMap(({ key, subject }) => {
+    if (!shouldReplaceSubject(key)) return [];
+
+    const sourceLines = providedLines[key].length > 0 ? providedLines[key] : defaultLinesBySubject[key];
+    const scopedLines = sourceLines.slice(0, scopeItemCount);
+
+    return scopedLines.map((title, scopedIndex) => {
+      const dayIndex = scopeDays.startIndex + scopedIndex;
+      const assignedDate = new Date(weekStart);
+      assignedDate.setDate(weekStart.getDate() + dayIndex);
+      const itemType = itemTypeForDay(subject, dayIndex);
+
+      return {
+        subject,
+        assignedDate,
+        title,
+        details: itemDetails(subject, title, dayIndex),
+        itemType,
+        sortOrder: dayIndex,
+        tokenValue: 1,
+        isPrintable: itemType === PlanItemType.PRINTABLE,
+        isOffline: itemType === PlanItemType.OFFLINE,
+      };
+    });
+  });
+
+  if (scopedItems.length === 0 && existing) {
     return {
-      error:
-        existingCompletionCount === 1
-          ? `${child.nickname} already has 1 recorded completion linked to that saved week. EduCore did not overwrite it, because replacing the week would also replace the completion-linked plan item.`
-          : `${child.nickname} already has ${existingCompletionCount} recorded completions linked to that saved week. EduCore did not overwrite it, because replacing the week would also replace those completion-linked plan items.`,
+      error: "Choose at least one subject to update in the selected scope.",
       values,
     };
   }
+
+  const targetedSubjects = new Set(scopedItems.map((item) => item.subject));
+  const existingItems = existing?.items ?? [];
+  const targetedExistingItems = existingItems.filter((item) => {
+    const dayIndex = Math.round((new Date(item.assignedDate).getTime() - weekStart.getTime()) / 86400000);
+    return dayIndex >= scopeDays.startIndex && dayIndex <= scopeDays.endIndex && targetedSubjects.has(item.subject);
+  });
+
+  const targetedCompletionCount = targetedExistingItems.reduce((sum, item) => sum + item._count.completions, 0);
+
+  if (existing && targetedCompletionCount > 0) {
+    const scopeLabel =
+      scopeMode === "single-day"
+        ? scopeStartDay
+        : scopeMode === "day-range"
+          ? `${scopeStartDay} to ${scopeEndDay}`
+          : "that saved week scope";
+
+    return {
+      error:
+        targetedCompletionCount === 1
+          ? `${child.nickname} already has 1 recorded completion linked to ${scopeLabel}. EduCore did not replace that scoped plan item.`
+          : `${child.nickname} already has ${targetedCompletionCount} recorded completions linked to ${scopeLabel}. EduCore did not replace those scoped plan items.`,
+      values,
+    };
+  }
+
+  const preservedItems = existingItems
+    .filter((item) => !targetedExistingItems.some((targeted) => targeted.id === item.id))
+    .map((item) => ({
+      subject: item.subject,
+      assignedDate: item.assignedDate,
+      title: item.title,
+      details: item.details,
+      itemType: item.itemType,
+      sortOrder: item.sortOrder,
+      tokenValue: item.tokenValue,
+      isPrintable: item.isPrintable,
+      isOffline: item.isOffline,
+    }));
+
+  const nextItems = [...preservedItems, ...scopedItems].sort((a, b) => {
+    const dateDiff = a.assignedDate.getTime() - b.assignedDate.getTime();
+    if (dateDiff !== 0) return dateDiff;
+    return a.sortOrder - b.sortOrder;
+  });
+
+  const nextSummary = summary || existing?.summary || (intent === "generate" ? `A calm starter week for ${child.nickname}.` : `A parent-made weekly plan for ${child.nickname}.`);
 
   await prisma.$transaction(async (tx) => {
     if (existing) {
@@ -245,9 +345,9 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
         where: { id: existing.id },
         data: {
           status: PlanStatus.ACTIVE,
-          summary: summary || (intent === "generate" ? `A calm starter week for ${child.nickname}.` : `A parent-made weekly plan for ${child.nickname}.`),
+          summary: nextSummary,
           items: {
-            create: items,
+            create: nextItems,
           },
         },
       });
@@ -257,9 +357,9 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
           childProfileId: child.id,
           weekStart,
           status: PlanStatus.ACTIVE,
-          summary: summary || (intent === "generate" ? `A calm starter week for ${child.nickname}.` : `A parent-made weekly plan for ${child.nickname}.`),
+          summary: nextSummary,
           items: {
-            create: items,
+            create: nextItems,
           },
         },
       });
@@ -275,10 +375,17 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
   revalidatePath("/child/subject/math");
   revalidatePath("/child/subject/thinking");
 
+  const scopeMessage =
+    scopeMode === "single-day"
+      ? ` for ${scopeStartDay}`
+      : scopeMode === "day-range"
+        ? ` for ${scopeStartDay} to ${scopeEndDay}`
+        : "";
+
   return {
     success:
       intent === "generate"
-        ? `${child.nickname}'s starter week was generated and saved.`
-        : `${child.nickname}'s weekly plan was saved.`,
+        ? `${child.nickname}'s starter plan${scopeMessage} was generated and saved.`
+        : `${child.nickname}'s weekly plan${scopeMessage} was saved.`,
   };
 }

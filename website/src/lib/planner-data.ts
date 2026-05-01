@@ -260,8 +260,8 @@ export async function getParentPlannerData(parentUserId: string) {
   });
 
   const controls: PlannerControl[] = [
-    { label: "Generate starter week", detail: "Create a calm Monday to Friday starter plan for one child using light built-in prompts." },
-    { label: "Save your own week", detail: "Write a few subject lines yourself and save them straight into the planner." },
+    { label: "Generate starter scope", detail: "Create a calm starter plan for a full week, one day, or a smaller day range." },
+    { label: "Save your own edits", detail: "Write only the subject lines you want to replace and keep the rest of the week intact." },
     { label: "Keep parent control", detail: "This stays practical and editable later, without turning into a heavy scheduler." },
   ];
 
@@ -361,7 +361,7 @@ export async function getParentPlannerData(parentUserId: string) {
           ]
         : [
             "Start with one calm week for one child rather than planning everything at once.",
-            "Use generation for a gentle draft, then adjust only what matters.",
+            "Use generation for a gentle draft, then adjust only the days or subjects that matter.",
             "Short readable titles are enough for V1, detail can stay light.",
             "Aim for a family rhythm, not a school-admin schedule.",
           ],
