@@ -64,6 +64,7 @@ model ChildProfile {
   sessionVersion  Int               @default(1)
   parentUser      ParentUser        @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
   rewardPlan      RewardPlan?
+  plannerDrafts   PlannerDraft[]
   weeklyPlans     WeeklyPlan[]
   taskCompletions TaskCompletion[]
   createdAt       DateTime          @default(now())
@@ -86,6 +87,45 @@ model RewardPlan {
   childProfile     ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+}
+
+
+model PlannerDraft {
+  id             String            @id @default(cuid())
+  childProfileId String
+  weekStart      DateTime          @db.Date
+  summary        String?
+  source         String?
+  learningGoals  String?
+  pacingNotes    String?
+  supportNotes   String?
+  childProfile   ChildProfile      @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  items          PlannerDraftItem[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([childProfileId, weekStart])
+  @@index([childProfileId])
+}
+
+model PlannerDraftItem {
+  id             String        @id @default(cuid())
+  plannerDraftId String
+  subject        SubjectArea
+  assignedDate   DateTime      @db.Date
+  title          String
+  details        String?
+  itemType       PlanItemType  @default(LESSON)
+  sortOrder      Int           @default(0)
+  tokenValue     Int           @default(1)
+  isPrintable    Boolean       @default(false)
+  isOffline      Boolean       @default(false)
+  plannerDraft   PlannerDraft  @relation(fields: [plannerDraftId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([plannerDraftId, assignedDate])
+  @@index([subject, assignedDate])
 }
 
 model WeeklyPlan {

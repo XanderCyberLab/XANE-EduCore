@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ParentChildEditForm } from "@/components/parent-child-edit-form";
 import { ParentPlannerCreateForm } from "@/components/parent-planner-create-form";
+import { applyPlannerDraftAction } from "@/app/parent/planner/actions";
 import type {
   ChildDashboardProfile,
   PlannerControl,
@@ -365,7 +366,7 @@ export function PlannerDetailBoard({
   plannerChildren: Array<{ id: string; nickname: string; ageLabel: string; hasPlan: boolean }>;
   defaultWeekOf: string;
   parentGuidance: string[];
-  savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: string[] }>;
+  savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: string[]; status: "draft" | "active" }>;
 }) {
   return (
     <section className="space-y-6">
@@ -480,6 +481,9 @@ export function PlannerDetailBoard({
                   <div key={plan.id} className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold text-white">{plan.childName}</p>
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${plan.status === "draft" ? "border-sky-300/20 bg-sky-300/10 text-sky-100" : "border-white/10 bg-slate-950/20 text-[var(--parent-muted)]"}`}>
+                        {plan.status === "draft" ? "Draft" : "Live week"}
+                      </span>
                       <span className="rounded-full border border-white/10 bg-slate-950/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--parent-muted)]">
                         {plan.blockCount} blocks
                       </span>
@@ -500,6 +504,14 @@ export function PlannerDetailBoard({
                         {plan.printableCount} printable{plan.printableCount === 1 ? "" : "s"}
                       </span>
                     </div>
+                    {plan.status === "draft" ? (
+                      <form action={applyPlannerDraftAction} className="mt-4">
+                        <input type="hidden" name="draftId" value={plan.id} />
+                        <button type="submit" className="rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-sky-100 transition hover:bg-sky-300/20">
+                          Approve and apply draft
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
                 ))
               ) : (

@@ -140,7 +140,7 @@ export async function getParentPlannerData(parentUserId: string) {
   const weekStart = startOfWeek(today);
   const weekEnd = endOfWeek(today);
 
-  const [plans, children] = await Promise.all([
+  const [plans, drafts, children] = await Promise.all([
     prisma.weeklyPlan.findMany({
     where: {
       childProfile: {
@@ -169,6 +169,32 @@ export async function getParentPlannerData(parentUserId: string) {
         orderBy: [{ assignedDate: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
       },
     },
+    }),
+    prisma.plannerDraft.findMany({
+      where: {
+        childProfile: {
+          parentUserId,
+          isArchived: false,
+        },
+        weekStart,
+      },
+      orderBy: [{ createdAt: "asc" }],
+      include: {
+        childProfile: {
+          select: {
+            nickname: true,
+          },
+        },
+        items: {
+          where: {
+            assignedDate: {
+              gte: weekStart,
+              lte: weekEnd,
+            },
+          },
+          orderBy: [{ assignedDate: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+        },
+      },
     }),
     prisma.childProfile.findMany({
       where: {
@@ -244,7 +270,23 @@ export async function getParentPlannerData(parentUserId: string) {
     }
   }
 
-  const savedPlans = plans.map((plan) => {
+  const savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: SubjectKey[]; status: "draft" | "active" }> = [
+    ...drafts.map((draft) => {
+      const draftItems = draft.items;
+      const subjectLabels = Array.from(new Set(draftItems.map((item) => getSubjectMeta(item.subject).label)));
+
+      return {
+        id: draft.id,
+        childName: draft.childProfile.nickname,
+        summary: draft.summary || `A reviewable draft for ${draft.childProfile.nickname}.`,
+        blockCount: draftItems.length,
+        completionCount: 0,
+        printableCount: draftItems.filter((item) => item.isPrintable || item.itemType === PlanItemType.PRINTABLE).length,
+        subjectLabels,
+        status: "draft" as const,
+      };
+    }),
+    ...plans.map((plan) => {
     const planItems = allItems.filter((item) => item.weeklyPlanId === plan.id);
     const subjectLabels = Array.from(new Set(planItems.map((item) => getSubjectMeta(item.subject).label)));
 
@@ -256,20 +298,29 @@ export async function getParentPlannerData(parentUserId: string) {
       completionCount: completionCountByPlanId.get(plan.id) ?? 0,
       printableCount: planItems.filter((item) => item.isPrintable || item.itemType === PlanItemType.PRINTABLE).length,
       subjectLabels,
+      status: "active" as const,
     };
-  });
+  }),
+  ];
 
   const controls: PlannerControl[] = [
-    { label: "Generate starter scope", detail: "Create a calm starter plan for a full week, one day, or a smaller day range." },
-    { label: "Save your own edits", detail: "Write only the subject lines you want to replace and keep the rest of the week intact." },
-    { label: "Keep parent control", detail: "This stays practical and editable later, without turning into a heavy scheduler." },
+    { label: "Generate starter draft", detail: "Create a calm starter plan for a full week, one day, or a smaller day range." },
+    { label: "Review before approval", detail: "Starter drafts now save separately from the live child week until a parent approves them." },
+    { label: "Keep parent control", detail: "Nothing auto-publishes here. Parents still review, approve, edit, and save the real week." },
   ];
+
+  const draftCount = drafts.length;
 
   const headerStats: PlannerHeaderStat[] = [
     {
       label: "Planned blocks",
       value: String(allItems.length),
       note: allItems.length > 0 ? "Stored weekly plan items across the family for this week." : "No stored blocks for this week yet.",
+    },
+    {
+      label: "Saved drafts",
+      value: String(draftCount),
+      note: draftCount > 0 ? "Reviewable planner drafts waiting outside the live child week." : "No separate planner drafts are waiting for review.",
     },
     {
       label: "Printable supports",
@@ -316,9 +367,11 @@ export async function getParentPlannerData(parentUserId: string) {
       : "No weekly plan is stored for this week yet. The planner stays calm and readable until a plan is created.";
 
   const aiNote =
-    allItems.length > 0
-      ? "This planner view is now backed by persisted weekly plan data. Parent-created weeks and gentle starter generation both land in the same structure for later AI assistance."
-      : "Create a parent-made week or generate a calm starter week, and this planner will immediately reflect the saved blocks and printable visibility here.";
+    draftCount > 0
+      ? "Starter drafts are now stored separately from the live child week. Parents can review draft blocks first, then approve them into the real weekly planner when ready."
+      : allItems.length > 0
+        ? "This planner view is backed by persisted weekly plan data, while future AI help still stays behind parent review before any live planner mutation."
+        : "Create a parent-made week or generate a calm starter draft. Future AI help will still depend on parent review before anything reaches the live planner.";
 
   const childrenWithPlans = new Set(plans.map((plan) => plan.childProfileId)).size;
   const daysWithPlans = days.filter((day) => day.blocks.length > 0).length;
@@ -358,12 +411,14 @@ export async function getParentPlannerData(parentUserId: string) {
             "Printable prompts are there to reduce prep, not add pressure.",
             "Hands-on and shared blocks still count as real school at home.",
             "This structure is ready for future AI help, while keeping the parent in charge now.",
+            "Use short focus notes and title-style lines so later drafts stay easy to review.",
           ]
         : [
             "Start with one calm week for one child rather than planning everything at once.",
             "Use generation for a gentle draft, then adjust only the days or subjects that matter.",
             "Short readable titles are enough for V1, detail can stay light.",
             "Aim for a family rhythm, not a school-admin schedule.",
+            "Treat generated drafts as editable suggestions, not automatic final plans.",
           ],
     plannerChildren: children.map((child) => ({
       id: child.id,
