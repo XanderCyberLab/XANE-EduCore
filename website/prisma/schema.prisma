@@ -59,6 +59,7 @@ model ChildProfile {
   username        String            @unique
   pinHash         String?
   ageBand         ChildAgeBand?
+  parentNotes     String?
   isArchived      Boolean           @default(false)
   sessionVersion  Int               @default(1)
   parentUser      ParentUser        @relation(fields: [parentUserId], references: [id], onDelete: Cascade)

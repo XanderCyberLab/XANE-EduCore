@@ -46,7 +46,7 @@ export default async function ParentChildrenPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Privacy-first setup</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Only the child details a family actually needs</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--parent-muted)]">
-            Profiles center on nickname, age band, simple login readiness, and reward direction. Real names, extra identifiers, and heavy forms stay out of the way unless a future need proves otherwise.
+            Profiles center on nickname, age band, simple login readiness, reward direction, and a short parent-authored planning note. Real names, extra identifiers, and heavy forms stay out of the way unless a future need proves otherwise.
           </p>
         </div>
 
@@ -56,6 +56,7 @@ export default async function ParentChildrenPage() {
             {[
               "Create child profile",
               "Edit nickname + age band",
+              "Keep short planning notes",
               "Update username",
               "Rotate child PIN",
               "Review reward setup",
@@ -134,7 +135,7 @@ export default async function ParentChildrenPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Current scope note</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Parents can now manage child basics in-product</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--parent-muted)]">
-            Child profiles can now be updated here with lightweight server-side handling for nickname, age band, username, and PIN rotation, while keeping the experience calm and privacy-first.
+            Child profiles can now be updated here with lightweight server-side handling for nickname, age band, planning notes, username, and PIN rotation, while keeping the experience calm and privacy-first.
           </p>
         </div>
       </section>

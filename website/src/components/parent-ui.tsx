@@ -186,7 +186,7 @@ export function ChildManagementCard({ child }: { child: ChildDashboardProfile })
       </div>
 
       <div className="border-b border-white/10 p-6">
-        <ParentChildEditForm child={{ id: child.id, name: child.name, ageLabel: child.ageLabel, username: child.username }} />
+        <ParentChildEditForm child={{ id: child.id, name: child.name, ageLabel: child.ageLabel, username: child.username, parentNotes: child.parentNotes }} />
       </div>
 
       <div className="grid gap-5 p-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -200,7 +200,7 @@ export function ChildManagementCard({ child }: { child: ChildDashboardProfile })
 
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Learning profile</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Planning context</p>
               <p className="mt-3 text-sm leading-7 text-slate-200">{child.pacingNote}</p>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <TagList title="Strengths showing up" items={child.strengths} tone="good" />

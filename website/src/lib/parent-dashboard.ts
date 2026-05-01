@@ -67,6 +67,12 @@ function supportTags(hasPlan: boolean, hasReward: boolean, hasPin: boolean) {
   return { strengths, gentleSupport };
 }
 
+function planningContextNote(parentNotes: string | null, hasPlan: boolean) {
+  if (parentNotes) return parentNotes;
+  if (hasPlan) return "Saved planning activity is available, but no extra parent notes are stored yet.";
+  return "No extra planning notes are stored yet. Add a short note only if it helps future weekly planning stay realistic.";
+}
+
 function rewardNote(tokens: number, goal: number) {
   if (goal <= 0) return "Reward goal can be set when the family is ready.";
   const remaining = Math.max(goal - tokens, 0);
@@ -191,15 +197,13 @@ export async function getParentDashboardData(parentUserId: string, parentEmail?:
               ? "Steady family rhythm"
               : "Ready for setup",
       username: child.username,
+      parentNotes: child.parentNotes,
       loginStatus: "Username prepared",
       pinStatus: child.pinHash ? "Parent-managed PIN active" : "PIN setup still needed",
       privacyNote: "Nickname-first profile, parent-managed login, and intentionally minimal child identity details.",
       setupState: planItems.length > 0 ? "Connected to saved plans" : "Waiting for first saved plan",
       lastActive: relativeLastActive(lastActiveAt),
-      pacingNote:
-        planItems.length > 0
-          ? "This child view is now anchored to saved weekly plan items, completion records, and reward progress so parent review stays grounded in real use."
-          : "The profile is ready, and the parent experience will fill in naturally once a weekly plan and task activity are saved.",
+      pacingNote: planningContextNote(child.parentNotes, planItems.length > 0),
       strengths,
       gentleSupport,
       parentActions: {

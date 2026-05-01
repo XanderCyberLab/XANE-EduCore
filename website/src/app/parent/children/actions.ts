@@ -14,6 +14,7 @@ type ChildProfileFields = {
   pin?: string;
   pinConfirm?: string;
   ageBand?: string;
+  parentNotes?: string;
 };
 
 export type CreateChildProfileState = {
@@ -35,6 +36,11 @@ export type UpdateChildCredentialsState = {
 };
 
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,22}[a-z0-9])?$/;
+const PARENT_NOTES_MAX_LENGTH = 600;
+
+function normalizeParentNotes(value: string) {
+  return value.trim().replace(/\r\n/g, "\n");
+}
 
 function optionalAgeBand(value: string): ChildAgeBand | null {
   if (!value) return null;
@@ -52,12 +58,14 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   const pinInput = String(formData.get("pin") ?? "");
   const pinConfirmInput = String(formData.get("pinConfirm") ?? "");
   const ageBandInput = String(formData.get("ageBand") ?? "").trim();
+  const parentNotesInput = String(formData.get("parentNotes") ?? "");
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
   const username = normalizeUsername(usernameInput);
   const pin = normalizePin(pinInput);
   const pinConfirm = normalizePin(pinConfirmInput);
   const ageBand = optionalAgeBand(ageBandInput);
+  const parentNotes = normalizeParentNotes(parentNotesInput);
 
   const fields: ChildProfileFields = {};
 
@@ -79,6 +87,10 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
 
   if (ageBandInput && !ageBand) {
     fields.ageBand = "Choose one of the listed age bands.";
+  }
+
+  if (parentNotes.length > PARENT_NOTES_MAX_LENGTH) {
+    fields.parentNotes = `Keep notes to ${PARENT_NOTES_MAX_LENGTH} characters or fewer.`;
   }
 
   if (Object.keys(fields).length > 0) {
@@ -109,6 +121,7 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
       username,
       pinHash: hashSecret(pin),
       ageBand,
+      parentNotes: parentNotes || null,
     },
   });
 
@@ -148,7 +161,9 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
   const childId = String(formData.get("childId") ?? "").trim();
   const nickname = String(formData.get("nickname") ?? "").trim();
   const ageBandInput = String(formData.get("ageBand") ?? "").trim();
+  const parentNotesInput = String(formData.get("parentNotes") ?? "");
   const ageBand = optionalAgeBand(ageBandInput);
+  const parentNotes = normalizeParentNotes(parentNotesInput);
   const fields: ChildProfileFields = {};
 
   if (!childId) {
@@ -161,6 +176,10 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
 
   if (ageBandInput && !ageBand) {
     fields.ageBand = "Choose one of the listed age bands.";
+  }
+
+  if (parentNotes.length > PARENT_NOTES_MAX_LENGTH) {
+    fields.parentNotes = `Keep notes to ${PARENT_NOTES_MAX_LENGTH} characters or fewer.`;
   }
 
   if (Object.keys(fields).length > 0) {
@@ -183,6 +202,7 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
     data: {
       nickname,
       ageBand,
+      parentNotes: parentNotes || null,
     },
   });
 

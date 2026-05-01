@@ -15,6 +15,7 @@ type ParentChildEditFormProps = {
     name: string;
     ageLabel: string;
     username: string;
+    parentNotes?: string | null;
   };
 };
 
@@ -44,7 +45,7 @@ export function ParentChildEditForm({ child }: ParentChildEditFormProps) {
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Edit profile</p>
           <h3 className="text-lg font-semibold text-white">Keep the child profile light and familiar</h3>
-          <p className="text-sm leading-6 text-[var(--parent-muted)]">Update the nickname they recognize and the age band that helps planning stay realistic.</p>
+          <p className="text-sm leading-6 text-[var(--parent-muted)]">Update the nickname they recognize, the age band that helps planning stay realistic, and a short parent-only note when it adds useful context.</p>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -76,6 +77,21 @@ export function ParentChildEditForm({ child }: ParentChildEditFormProps) {
               <option value="UPPER_ELEMENTARY">Upper elementary</option>
             </select>
             <FieldError message={profileState.fields?.ageBand} />
+          </div>
+
+          <div className="md:col-span-2">
+            <label htmlFor={`parentNotes-${child.id}`} className="text-sm font-semibold text-white">Planning notes</label>
+            <textarea
+              id={`parentNotes-${child.id}`}
+              name="parentNotes"
+              rows={4}
+              maxLength={600}
+              defaultValue={child.parentNotes ?? ""}
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+              placeholder="Keep short notes about pacing, supports, motivators, or interests that matter for planning."
+            />
+            <p className="mt-2 text-xs text-[var(--parent-muted)]">Private parent context for calmer planning, not a full child settings system.</p>
+            <FieldError message={profileState.fields?.parentNotes} />
           </div>
         </div>
 

@@ -105,6 +105,20 @@ export function ParentChildCreateForm({
         </div>
 
         <div className="md:col-span-2">
+          <label htmlFor="parentNotes" className="text-sm font-semibold text-white">Planning notes, optional</label>
+          <textarea
+            id="parentNotes"
+            name="parentNotes"
+            rows={4}
+            maxLength={600}
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+            placeholder="Short notes that help future planning stay realistic, like pacing, interests, helpful supports, or sensitivities."
+          />
+          <p className="mt-2 text-xs text-[var(--parent-muted)]">Parent-authored only. Keep it short and practical for planning.</p>
+          <FieldError message={state.fields?.parentNotes} />
+        </div>
+
+        <div className="md:col-span-2">
           <label htmlFor="pinConfirm" className="text-sm font-semibold text-white">Confirm PIN</label>
           <input
             id="pinConfirm"
@@ -122,7 +136,7 @@ export function ParentChildCreateForm({
       </div>
 
       <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 text-sm leading-7 text-[var(--parent-muted)]">
-        EduCore stores the child PIN as a secure hash, keeps identity nickname-first, and avoids collecting extra child details unless a future need earns the complexity.
+        EduCore stores the child PIN as a secure hash, keeps identity nickname-first, and limits planning context to a short parent-authored note instead of a heavy profile system.
       </div>
 
       {state.error ? <p className="text-sm text-rose-300">{state.error}</p> : null}
