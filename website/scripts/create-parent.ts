@@ -9,7 +9,7 @@ async function main() {
   requireDatabaseUrl();
 
   if (!email || !password.trim()) {
-    throw new Error("Usage: node --experimental-strip-types scripts/create-parent.ts --email parent@example.com --password 'strong-password' [--timezone America/Chicago]");
+    throw new Error("Usage: npm run parent:create -- --email parent@example.com --password 'strong-password' [--timezone America/Chicago]");
   }
 
   const client = await createDbClient();

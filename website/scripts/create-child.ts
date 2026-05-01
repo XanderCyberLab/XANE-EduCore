@@ -13,7 +13,7 @@ async function main() {
 
   if (!parentEmail || !nickname || !username || pin.length < 4) {
     throw new Error(
-      "Usage: node --experimental-strip-types scripts/create-child.ts --parent-email parent@example.com --nickname Sunny --username sunny-star --pin 1234 [--reward-title 'Story basket'] [--token-goal 12]",
+      "Usage: npm run child:create -- --parent-email parent@example.com --nickname Sunny --username sunny-star --pin 1234 [--reward-title 'Story basket'] [--token-goal 12]",
     );
   }
 
