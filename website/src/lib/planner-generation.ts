@@ -1,4 +1,5 @@
 import { SubjectArea } from "@/generated/prisma/client";
+import { createOpenAIPlannerGenerationProvider } from "@/lib/planner-generation-openai";
 
 export type PlannerGenerationContext = {
   learningGoals: string;
@@ -113,6 +114,18 @@ class StarterTemplatePlannerGenerationProvider implements PlannerGenerationProvi
 
 const starterTemplateProvider = new StarterTemplatePlannerGenerationProvider();
 
+const configuredPlannerGenerationProvider = (() => {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) return starterTemplateProvider;
+
+  return createOpenAIPlannerGenerationProvider({
+    apiKey,
+    baseUrl: process.env.OPENAI_BASE_URL?.trim(),
+    model: process.env.OPENAI_MODEL?.trim(),
+    fallback: starterTemplateProvider,
+  });
+})();
+
 export function getPlannerGenerationProvider(): PlannerGenerationProvider {
-  return starterTemplateProvider;
+  return configuredPlannerGenerationProvider;
 }

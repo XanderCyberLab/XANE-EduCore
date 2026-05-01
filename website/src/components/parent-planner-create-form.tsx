@@ -38,7 +38,8 @@ export function ParentPlannerCreateForm({
         <p className="font-semibold text-white">Practical authoring rules</p>
         <ul className="mt-2 space-y-1">
           <li>Use the Monday date for the exact week you want to save.</li>
-          <li>Add up to 5 non-empty lines per subject, one line per weekday.</li>
+          <li>Add up to 5 non-empty lines per subject, one short title-style line per weekday.</li>
+          <li>EduCore strips bullets and keeps generation inputs structured so later AI help stays reviewable.</li>
           <li>Pick a smaller scope when you only want to adjust one day or part of the week.</li>
         </ul>
       </div>
@@ -96,18 +97,68 @@ export function ParentPlannerCreateForm({
         </div>
       </div>
 
-      <div className="mt-4">
-        <label htmlFor="summary" className="text-sm font-semibold text-white">Weekly note, optional</label>
-        <textarea
-          id="summary"
-          name="summary"
-          rows={3}
-          maxLength={280}
-          className="mt-2 w-full rounded-3xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
-          placeholder="Keep the week light, tactile, and readable."
-          defaultValue={state.values?.summary ?? ""}
-        />
-        <FieldError message={state.fields?.summary} />
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <label htmlFor="summary" className="text-sm font-semibold text-white">Weekly note, optional</label>
+          <textarea
+            id="summary"
+            name="summary"
+            rows={3}
+            maxLength={280}
+            className="mt-2 w-full rounded-3xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+            placeholder="Keep the week light, tactile, and readable."
+            defaultValue={state.values?.summary ?? ""}
+          />
+          <FieldError message={state.fields?.summary} />
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+          <p className="text-sm font-semibold text-white">Future AI prep inputs</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">
+            These stay parent-authored for now. Later, EduCore can use them to draft calmer weeks without skipping your review.
+          </p>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label htmlFor="learningGoals" className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Learning focus</label>
+              <input
+                id="learningGoals"
+                name="learningGoals"
+                type="text"
+                maxLength={180}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="Story retell confidence, counting to 20, simple patterns"
+                defaultValue={state.values?.learningGoals ?? ""}
+              />
+              <FieldError message={state.fields?.learningGoals} />
+            </div>
+            <div>
+              <label htmlFor="pacingNotes" className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Pacing preference</label>
+              <input
+                id="pacingNotes"
+                name="pacingNotes"
+                type="text"
+                maxLength={180}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="short sessions, light Wednesday, hands-on first"
+                defaultValue={state.values?.pacingNotes ?? ""}
+              />
+              <FieldError message={state.fields?.pacingNotes} />
+            </div>
+            <div>
+              <label htmlFor="supportNotes" className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Parent support note</label>
+              <input
+                id="supportNotes"
+                name="supportNotes"
+                type="text"
+                maxLength={180}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="print once, allow movement breaks, stop before fatigue"
+                defaultValue={state.values?.supportNotes ?? ""}
+              />
+              <FieldError message={state.fields?.supportNotes} />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-[1.1fr_0.9fr]">
@@ -164,7 +215,7 @@ export function ParentPlannerCreateForm({
           <div key={field.key} className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
             <label htmlFor={field.key} className="text-sm font-semibold text-white">{field.label}</label>
             <p className="mt-2 text-xs leading-5 text-[var(--parent-muted)]">{field.hint}</p>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-400">Monday to Friday, up to 5 saved lines</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-400">Monday to Friday, up to 5 short saved lines</p>
             <textarea
               id={field.key}
               name={field.key}
@@ -179,11 +230,11 @@ export function ParentPlannerCreateForm({
       </div>
 
       <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-[var(--parent-muted)]">
-        Saving a plan updates the shared weekly planner data that the parent dashboard and child daily task flow already read. Generating a starter week uses a small built-in template layer, not heavy AI.
+        Saving a plan updates the shared weekly planner data that the parent dashboard and child daily task flow already read. Generating a starter week now stays behind the provider boundary, using configured AI when available and a calm built-in fallback when it is not.
       </div>
 
       <div className="mt-4 rounded-3xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-7 text-amber-100">
-        If the selected child already has recorded completions inside the scope you are replacing, EduCore will protect those completion-linked plan items instead of silently replacing them.
+        Parent review stays first. EduCore will not auto-publish hidden AI work, and if the selected child already has recorded completions inside the scope you are replacing, it will protect those completion-linked plan items instead of silently replacing them.
       </div>
 
       {state.error ? <p className="mt-4 text-sm text-rose-300">{state.error}</p> : null}
@@ -191,7 +242,7 @@ export function ParentPlannerCreateForm({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <button type="submit" name="intent" value="generate" className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-          Generate starter scope
+          Generate starter draft
         </button>
         <AuthSubmitButton label="Save weekly plan" pendingLabel="Saving weekly plan..." className="bg-white text-slate-950" />
       </div>
