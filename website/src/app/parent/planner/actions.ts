@@ -2,6 +2,7 @@
 
 import { PlanItemType, PlanStatus, SubjectArea } from "@/generated/prisma/client";
 import { requireParentSession } from "@/lib/auth/guards";
+import { getPlannerGenerationProvider } from "@/lib/planner-generation";
 import { startOfWeek } from "@/lib/planner-data";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -108,47 +109,6 @@ function buildPlanningContext(input: { learningGoals: string; pacingNotes: strin
   };
 }
 
-function ageBandLabel(ageBand: string | null | undefined) {
-  switch (ageBand) {
-    case "EARLY_YEARS":
-      return "early years";
-    case "UPPER_ELEMENTARY":
-      return "upper elementary";
-    default:
-      return "lower elementary";
-  }
-}
-
-function defaultPlanLines(subject: SubjectArea, ageBand: string | null | undefined) {
-  const band = ageBandLabel(ageBand);
-
-  switch (subject) {
-    case SubjectArea.READING:
-      return [
-        `Warm up with a short ${band} reading moment`,
-        "Read together and retell the story",
-        "Light phonics or word play review",
-        "Printable reading practice and confidence check",
-        "Favorite book reread and calm wrap-up",
-      ];
-    case SubjectArea.MATH:
-      return [
-        "Hands-on counting or number warm-up",
-        "Short guided math practice",
-        "Keep math tactile and low-pressure",
-        "Printable or table-top math review",
-        "Shape or pattern hunt to finish the week",
-      ];
-    case SubjectArea.CRITICAL_THINKING:
-      return [
-        "Pattern or sorting prompt",
-        "Question-of-the-day thinking block",
-        "Light puzzle or comparison activity",
-        "Shared observation walk or family challenge",
-        "Reflect on the week and notice progress",
-      ];
-  }
-}
 
 function itemTypeForDay(subject: SubjectArea, index: number) {
   if (subject === SubjectArea.CRITICAL_THINKING && (index === 3 || index === 4)) return PlanItemType.OFFLINE;
@@ -164,30 +124,6 @@ function itemDetails(subject: SubjectArea, title: string, index: number) {
   return `${day} thinking focus: ${title}. Shared and offline moments still count as real learning.`;
 }
 
-function buildGeneratedPlanLines(subject: SubjectArea, baseLines: string[], context: ReturnType<typeof buildPlanningContext>) {
-  return baseLines.map((line) => {
-    if (context.learningGoals) {
-      if (subject === SubjectArea.READING) return `${line} for ${context.learningGoals.toLowerCase()}`;
-      if (subject === SubjectArea.MATH) return `${line} around ${context.learningGoals.toLowerCase()}`;
-      return `${line} tied to ${context.learningGoals.toLowerCase()}`;
-    }
-
-    if (context.pacingNotes && subject === SubjectArea.MATH) return `${line} with ${context.pacingNotes.toLowerCase()}`;
-    if (context.supportNotes && subject === SubjectArea.CRITICAL_THINKING) return `${line} with ${context.supportNotes.toLowerCase()}`;
-    return line;
-  });
-}
-
-function buildGeneratedSummary(childNickname: string, context: ReturnType<typeof buildPlanningContext>) {
-  const summaryParts = [
-    context.learningGoals ? `Focus on ${context.learningGoals.toLowerCase()}` : `A calm starter week for ${childNickname}`,
-    context.pacingNotes ? `keep the rhythm ${context.pacingNotes.toLowerCase()}` : "keep the rhythm manageable",
-    context.supportNotes ? `and remember ${context.supportNotes.toLowerCase()}` : "and leave room for parent review before use",
-  ];
-
-  const summary = `${summaryParts[0]}, ${summaryParts[1]}, ${summaryParts[2]}.`;
-  return summary.charAt(0).toUpperCase() + summary.slice(1);
-}
 
 async function applyWeeklyPlanFromItems(input: {
   child: { id: string; nickname: string };
@@ -347,11 +283,6 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
 
   if (!child || !weekStart || !scopeDays) return { error: "That child profile could not be found for this parent.", values };
 
-  const defaultLinesBySubject = {
-    reading: defaultPlanLines(SubjectArea.READING, child.ageBand),
-    math: defaultPlanLines(SubjectArea.MATH, child.ageBand),
-    thinking: defaultPlanLines(SubjectArea.CRITICAL_THINKING, child.ageBand),
-  };
   const planningContext = buildPlanningContext({ learningGoals, pacingNotes, supportNotes });
   const scopeItemCount = scopeDays.endIndex - scopeDays.startIndex + 1;
   const subjectConfigs: Array<{ key: keyof typeof providedLines; subject: SubjectArea }> = [
@@ -360,14 +291,21 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
     { key: "thinking", subject: SubjectArea.CRITICAL_THINKING },
   ];
   const shouldReplaceSubject = (key: keyof typeof providedLines) => intent === "generate" || providedLines[key].length > 0;
+  const generatedDraft = intent === "generate"
+    ? await getPlannerGenerationProvider().generateStarterDraft({
+        childNickname: child.nickname,
+        childAgeBand: child.ageBand,
+        context: planningContext,
+        scopeItemCount,
+        subjects: subjectConfigs.filter(({ key }) => shouldReplaceSubject(key)).map(({ subject }) => subject),
+      })
+    : null;
 
   const scopedItems: PlannerItemInput[] = subjectConfigs.flatMap(({ key, subject }) => {
     if (!shouldReplaceSubject(key)) return [];
     const sourceLines = providedLines[key].length > 0
       ? providedLines[key]
-      : intent === "generate"
-        ? buildGeneratedPlanLines(subject, defaultLinesBySubject[key], planningContext)
-        : defaultLinesBySubject[key];
+      : generatedDraft?.linesBySubject[subject] ?? [];
 
     return sourceLines.slice(0, scopeItemCount).map((title, scopedIndex) => {
       const dayIndex = scopeDays.startIndex + scopedIndex;
@@ -390,7 +328,7 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
 
   if (scopedItems.length === 0) return { error: "Choose at least one subject to update in the selected scope.", values };
 
-  const nextSummary = summary || (intent === "generate" ? buildGeneratedSummary(child.nickname, planningContext) : `A parent-made weekly plan for ${child.nickname}.`);
+  const nextSummary = summary || (intent === "generate" ? generatedDraft?.summary ?? `A calm starter week for ${child.nickname}.` : `A parent-made weekly plan for ${child.nickname}.`);
   const scopeMessage = scopeMode === "single-day" ? ` for ${scopeStartDay}` : scopeMode === "day-range" ? ` for ${scopeStartDay} to ${scopeEndDay}` : "";
 
   if (intent === "generate") {
@@ -406,7 +344,7 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
           where: { id: existingDraft.id },
           data: {
             summary: nextSummary,
-            source: "starter-template",
+            source: generatedDraft?.source ?? "starter-template",
             learningGoals: planningContext.learningGoals || null,
             pacingNotes: planningContext.pacingNotes || null,
             supportNotes: planningContext.supportNotes || null,
@@ -419,7 +357,7 @@ export async function saveWeeklyPlanAction(_: SaveWeeklyPlanState, formData: For
             childProfileId: child.id,
             weekStart,
             summary: nextSummary,
-            source: "starter-template",
+            source: generatedDraft?.source ?? "starter-template",
             learningGoals: planningContext.learningGoals || null,
             pacingNotes: planningContext.pacingNotes || null,
             supportNotes: planningContext.supportNotes || null,
