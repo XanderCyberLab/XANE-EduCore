@@ -17,25 +17,25 @@ export function ParentLoginForm({ hasExistingParentAccount }: { hasExistingParen
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--parent-muted)]">Sign in</p>
           <h2 className="mt-2 text-lg font-semibold text-[var(--parent-text)]">Return to your parent dashboard</h2>
           <p className="mt-1 text-sm leading-6 text-[var(--parent-muted)]">
-            Use an existing parent email and password to continue where you left off.
+            Use your existing parent email or username with your password to continue where you left off.
           </p>
         </div>
 
         <form action={signInAction} className="space-y-4">
           <div>
-            <label htmlFor="signin-email" className="text-sm font-semibold text-[var(--parent-text)]">
-              Email
+            <label htmlFor="signin-identifier" className="text-sm font-semibold text-[var(--parent-text)]">
+              Email or username
             </label>
             <input
-              id="signin-email"
-              name="email"
-              type="email"
-              autoComplete="email"
+              id="signin-identifier"
+              name="identifier"
+              type="text"
+              autoComplete="username"
               autoCapitalize="none"
               autoCorrect="off"
               required
               className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none ring-0 placeholder:text-slate-400"
-              placeholder="parent@example.com"
+              placeholder="parent@example.com or xander"
               autoFocus={hasExistingParentAccount}
             />
           </div>
@@ -57,7 +57,7 @@ export function ParentLoginForm({ hasExistingParentAccount }: { hasExistingParen
           <div className="space-y-3">
             <AuthSubmitButton label="Sign in" pendingLabel="Signing in..." className="bg-white text-slate-950" />
             <p className="text-sm leading-6 text-[var(--parent-muted)]">
-              Returning parent accounts sign in here without switching modes or losing the create-account path.
+              Returning parent accounts can sign in here with either email or username, without switching modes or losing the create-account path.
             </p>
           </div>
         </form>
@@ -114,7 +114,7 @@ export function ParentLoginForm({ hasExistingParentAccount }: { hasExistingParen
               className="bg-emerald-300 text-emerald-950"
             />
             <p className="text-sm leading-6 text-[var(--parent-muted)]">
-              This path stays available after sign-out, so additional parent accounts can be created without mode confusion.
+              This path still requires email for account identity, and the parent username defaults to the part before the @ for easier sign-in.
             </p>
           </div>
         </form>

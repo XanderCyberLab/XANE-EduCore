@@ -43,6 +43,7 @@ enum TaskCompletionStatus {
 model ParentUser {
   id             String         @id @default(cuid())
   email          String         @unique
+  username       String?        @unique
   passwordHash   String?
   timezone       String?        @default("America/Chicago")
   sessionVersion Int            @default(1)

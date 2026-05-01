@@ -9,19 +9,20 @@ export type ParentLoginState = {
 
 function readCredentials(formData: FormData) {
   return {
+    identifier: String(formData.get("identifier") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
   };
 }
 
 export async function parentLoginAction(_: ParentLoginState, formData: FormData): Promise<ParentLoginState> {
-  const { email, password } = readCredentials(formData);
+  const { identifier, password } = readCredentials(formData);
 
-  if (!email || !password.trim()) {
-    return { error: "Please enter your email and password." };
+  if (!identifier || !password.trim()) {
+    return { error: "Please enter your email or username and password." };
   }
 
-  const result = await signInParent(email, password);
+  const result = await signInParent(identifier, password);
 
   if (!result.ok) {
     return { error: result.error };
