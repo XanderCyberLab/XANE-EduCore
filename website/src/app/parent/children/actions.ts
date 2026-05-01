@@ -15,6 +15,9 @@ type ChildProfileFields = {
   pinConfirm?: string;
   ageBand?: string;
   parentNotes?: string;
+  learningStrengths?: string;
+  supportNotes?: string;
+  motivators?: string;
 };
 
 export type CreateChildProfileState = {
@@ -37,9 +40,28 @@ export type UpdateChildCredentialsState = {
 
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,22}[a-z0-9])?$/;
 const PARENT_NOTES_MAX_LENGTH = 600;
+const STRUCTURED_CONTEXT_MAX_LENGTH = 160;
 
 function normalizeParentNotes(value: string) {
   return value.trim().replace(/\r\n/g, "\n");
+}
+
+function normalizeStructuredContext(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function validateStructuredContext(fields: ChildProfileFields, values: { learningStrengths: string; supportNotes: string; motivators: string }) {
+  if (values.learningStrengths.length > STRUCTURED_CONTEXT_MAX_LENGTH) {
+    fields.learningStrengths = `Keep strengths to ${STRUCTURED_CONTEXT_MAX_LENGTH} characters or fewer.`;
+  }
+
+  if (values.supportNotes.length > STRUCTURED_CONTEXT_MAX_LENGTH) {
+    fields.supportNotes = `Keep support notes to ${STRUCTURED_CONTEXT_MAX_LENGTH} characters or fewer.`;
+  }
+
+  if (values.motivators.length > STRUCTURED_CONTEXT_MAX_LENGTH) {
+    fields.motivators = `Keep motivators to ${STRUCTURED_CONTEXT_MAX_LENGTH} characters or fewer.`;
+  }
 }
 
 function optionalAgeBand(value: string): ChildAgeBand | null {
@@ -59,6 +81,9 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   const pinConfirmInput = String(formData.get("pinConfirm") ?? "");
   const ageBandInput = String(formData.get("ageBand") ?? "").trim();
   const parentNotesInput = String(formData.get("parentNotes") ?? "");
+  const learningStrengthsInput = String(formData.get("learningStrengths") ?? "");
+  const supportNotesInput = String(formData.get("supportNotes") ?? "");
+  const motivatorsInput = String(formData.get("motivators") ?? "");
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
   const username = normalizeUsername(usernameInput);
@@ -66,6 +91,9 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   const pinConfirm = normalizePin(pinConfirmInput);
   const ageBand = optionalAgeBand(ageBandInput);
   const parentNotes = normalizeParentNotes(parentNotesInput);
+  const learningStrengths = normalizeStructuredContext(learningStrengthsInput);
+  const supportNotes = normalizeStructuredContext(supportNotesInput);
+  const motivators = normalizeStructuredContext(motivatorsInput);
 
   const fields: ChildProfileFields = {};
 
@@ -92,6 +120,8 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
   if (parentNotes.length > PARENT_NOTES_MAX_LENGTH) {
     fields.parentNotes = `Keep notes to ${PARENT_NOTES_MAX_LENGTH} characters or fewer.`;
   }
+
+  validateStructuredContext(fields, { learningStrengths, supportNotes, motivators });
 
   if (Object.keys(fields).length > 0) {
     return {
@@ -122,6 +152,9 @@ export async function createChildProfileAction(_: CreateChildProfileState, formD
       pinHash: hashSecret(pin),
       ageBand,
       parentNotes: parentNotes || null,
+      learningStrengths: learningStrengths || null,
+      supportNotes: supportNotes || null,
+      motivators: motivators || null,
     },
   });
 
@@ -162,8 +195,14 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
   const nickname = String(formData.get("nickname") ?? "").trim();
   const ageBandInput = String(formData.get("ageBand") ?? "").trim();
   const parentNotesInput = String(formData.get("parentNotes") ?? "");
+  const learningStrengthsInput = String(formData.get("learningStrengths") ?? "");
+  const supportNotesInput = String(formData.get("supportNotes") ?? "");
+  const motivatorsInput = String(formData.get("motivators") ?? "");
   const ageBand = optionalAgeBand(ageBandInput);
   const parentNotes = normalizeParentNotes(parentNotesInput);
+  const learningStrengths = normalizeStructuredContext(learningStrengthsInput);
+  const supportNotes = normalizeStructuredContext(supportNotesInput);
+  const motivators = normalizeStructuredContext(motivatorsInput);
   const fields: ChildProfileFields = {};
 
   if (!childId) {
@@ -181,6 +220,8 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
   if (parentNotes.length > PARENT_NOTES_MAX_LENGTH) {
     fields.parentNotes = `Keep notes to ${PARENT_NOTES_MAX_LENGTH} characters or fewer.`;
   }
+
+  validateStructuredContext(fields, { learningStrengths, supportNotes, motivators });
 
   if (Object.keys(fields).length > 0) {
     return {
@@ -203,6 +244,9 @@ export async function updateChildProfileAction(_: UpdateChildProfileState, formD
       nickname,
       ageBand,
       parentNotes: parentNotes || null,
+      learningStrengths: learningStrengths || null,
+      supportNotes: supportNotes || null,
+      motivators: motivators || null,
     },
   });
 

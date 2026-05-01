@@ -25,6 +25,9 @@ export type ChildDashboardProfile = {
   mood: string;
   username: string;
   parentNotes?: string | null;
+  learningStrengths?: string | null;
+  supportNotes?: string | null;
+  motivators?: string | null;
   loginStatus: string;
   pinStatus: string;
   privacyNote: string;
@@ -129,6 +132,9 @@ export const parentDashboardData = {
       mood: "Calm momentum",
       username: "junie-sky",
       parentNotes: "Reading confidence is high. Math goes better with short transitions and gentle warmups.",
+      learningStrengths: "Story retell, phonics confidence, nature journaling",
+      supportNotes: "Gentle math warmups and short transitions",
+      motivators: "Visible progress and read-aloud time",
       loginStatus: "Username prepared",
       pinStatus: "Parent-managed PIN active",
       privacyNote: "Nickname-first profile, no legal name or extra identity details stored.",
@@ -166,6 +172,9 @@ export const parentDashboardData = {
       mood: "Needs a gentle math reset",
       username: "milo-moon",
       parentNotes: "Best with tactile activities, movement breaks, and one clear task at a time. Loves visible progress.",
+      learningStrengths: "Pattern spotting, curious questions, hands-on counting",
+      supportNotes: "Movement breaks and one clear task at a time",
+      motivators: "Visible reward progress and helper jobs",
       loginStatus: "Username prepared",
       pinStatus: "Parent reviews PIN at login time",
       privacyNote: "Kept lightweight for family use, with parent-controlled access only.",

@@ -53,22 +53,25 @@ model ParentUser {
 }
 
 model ChildProfile {
-  id              String            @id @default(cuid())
-  parentUserId    String
-  nickname        String
-  username        String            @unique
-  pinHash         String?
-  ageBand         ChildAgeBand?
-  parentNotes     String?
-  isArchived      Boolean           @default(false)
-  sessionVersion  Int               @default(1)
-  parentUser      ParentUser        @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
-  rewardPlan      RewardPlan?
-  plannerDrafts   PlannerDraft[]
-  weeklyPlans     WeeklyPlan[]
-  taskCompletions TaskCompletion[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                String            @id @default(cuid())
+  parentUserId      String
+  nickname          String
+  username          String            @unique
+  pinHash           String?
+  ageBand           ChildAgeBand?
+  parentNotes       String?
+  learningStrengths String?
+  supportNotes      String?
+  motivators        String?
+  isArchived        Boolean           @default(false)
+  sessionVersion    Int               @default(1)
+  parentUser        ParentUser        @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
+  rewardPlan        RewardPlan?
+  plannerDrafts     PlannerDraft[]
+  weeklyPlans       WeeklyPlan[]
+  taskCompletions   TaskCompletion[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([parentUserId])
 }

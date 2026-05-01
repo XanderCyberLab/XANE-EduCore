@@ -61,9 +61,15 @@ function summarizeNextStep(totalToday: number, remainingToday: number, mathNeeds
   return "Use the extra space for a calm check-in or reward moment, not more load.";
 }
 
-function supportTags(hasPlan: boolean, hasReward: boolean, hasPin: boolean) {
-  const strengths = [hasPlan ? "Weekly plan connected" : "Ready for a saved plan", hasReward ? "Reward path visible" : "Reward can be added later"];
-  const gentleSupport = [hasPin ? "Parent-managed PIN is set" : "PIN still needs setup", "Nickname-first family profile"];
+function supportTags(child: { learningStrengths: string | null; supportNotes: string | null }, hasPlan: boolean, hasReward: boolean, hasPin: boolean) {
+  const strengths = [
+    child.learningStrengths || (hasPlan ? "Weekly plan connected" : "Ready for a saved plan"),
+    hasReward ? "Reward path visible" : "Reward can be added later",
+  ];
+  const gentleSupport = [
+    child.supportNotes || (hasPin ? "Parent-managed PIN is set" : "PIN still needs setup"),
+    "Nickname-first family profile",
+  ];
   return { strengths, gentleSupport };
 }
 
@@ -173,7 +179,7 @@ export async function getParentDashboardData(parentUserId: string, parentEmail?:
     });
 
     const mathNeedsAttention = subjects.some((subject) => subject.subject === "Math" && subject.status === "needs attention");
-    const { strengths, gentleSupport } = supportTags(planItems.length > 0, Boolean(activeRewardPlan), Boolean(child.pinHash));
+    const { strengths, gentleSupport } = supportTags(child, planItems.length > 0, Boolean(activeRewardPlan), Boolean(child.pinHash));
 
     return {
       id: child.id,
@@ -198,6 +204,9 @@ export async function getParentDashboardData(parentUserId: string, parentEmail?:
               : "Ready for setup",
       username: child.username,
       parentNotes: child.parentNotes,
+      learningStrengths: child.learningStrengths,
+      supportNotes: child.supportNotes,
+      motivators: child.motivators,
       loginStatus: "Username prepared",
       pinStatus: child.pinHash ? "Parent-managed PIN active" : "PIN setup still needed",
       privacyNote: "Nickname-first profile, parent-managed login, and intentionally minimal child identity details.",

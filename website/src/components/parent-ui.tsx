@@ -187,7 +187,18 @@ export function ChildManagementCard({ child }: { child: ChildDashboardProfile })
       </div>
 
       <div className="border-b border-white/10 p-6">
-        <ParentChildEditForm child={{ id: child.id, name: child.name, ageLabel: child.ageLabel, username: child.username, parentNotes: child.parentNotes }} />
+        <ParentChildEditForm
+          child={{
+            id: child.id,
+            name: child.name,
+            ageLabel: child.ageLabel,
+            username: child.username,
+            parentNotes: child.parentNotes,
+            learningStrengths: child.learningStrengths,
+            supportNotes: child.supportNotes,
+            motivators: child.motivators,
+          }}
+        />
       </div>
 
       <div className="grid gap-5 p-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -203,6 +214,13 @@ export function ChildManagementCard({ child }: { child: ChildDashboardProfile })
             <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Planning context</p>
               <p className="mt-3 text-sm leading-7 text-slate-200">{child.pacingNote}</p>
+              {(child.learningStrengths || child.supportNotes || child.motivators) ? (
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--parent-muted)]">
+                  {child.learningStrengths ? <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-emerald-100">Strengths: {child.learningStrengths}</span> : null}
+                  {child.supportNotes ? <span className="rounded-full border border-white/10 bg-slate-950/25 px-3 py-2 text-slate-200">Supports: {child.supportNotes}</span> : null}
+                  {child.motivators ? <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-amber-100">Motivators: {child.motivators}</span> : null}
+                </div>
+              ) : null}
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <TagList title="Strengths showing up" items={child.strengths} tone="good" />
                 <TagList title="Gentle support areas" items={child.gentleSupport} tone="soft" />

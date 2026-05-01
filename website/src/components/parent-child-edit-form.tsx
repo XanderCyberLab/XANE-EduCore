@@ -16,6 +16,9 @@ type ParentChildEditFormProps = {
     ageLabel: string;
     username: string;
     parentNotes?: string | null;
+    learningStrengths?: string | null;
+    supportNotes?: string | null;
+    motivators?: string | null;
   };
 };
 
@@ -45,7 +48,7 @@ export function ParentChildEditForm({ child }: ParentChildEditFormProps) {
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Edit profile</p>
           <h3 className="text-lg font-semibold text-white">Keep the child profile light and familiar</h3>
-          <p className="text-sm leading-6 text-[var(--parent-muted)]">Update the nickname they recognize, the age band that helps planning stay realistic, and a short parent-only note when it adds useful context.</p>
+          <p className="text-sm leading-6 text-[var(--parent-muted)]">Update the nickname they recognize, the age band that helps planning stay realistic, and a few short parent-only planning cues when they add useful context.</p>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -77,6 +80,54 @@ export function ParentChildEditForm({ child }: ParentChildEditFormProps) {
               <option value="UPPER_ELEMENTARY">Upper elementary</option>
             </select>
             <FieldError message={profileState.fields?.ageBand} />
+          </div>
+
+          <div className="md:col-span-2 rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+            <div>
+              <label htmlFor={`learningStrengths-${child.id}`} className="text-sm font-semibold text-white">Strengths showing up</label>
+              <input
+                id={`learningStrengths-${child.id}`}
+                name="learningStrengths"
+                type="text"
+                maxLength={160}
+                defaultValue={child.learningStrengths ?? ""}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="Loves read-alouds, remembers routines, enjoys hands-on work"
+              />
+              <FieldError message={profileState.fields?.learningStrengths} />
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div>
+                <label htmlFor={`supportNotes-${child.id}`} className="text-sm font-semibold text-white">Helpful supports</label>
+                <input
+                  id={`supportNotes-${child.id}`}
+                  name="supportNotes"
+                  type="text"
+                  maxLength={160}
+                  defaultValue={child.supportNotes ?? ""}
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                  placeholder="Short sessions, movement breaks, gentle transitions"
+                />
+                <FieldError message={profileState.fields?.supportNotes} />
+              </div>
+
+              <div>
+                <label htmlFor={`motivators-${child.id}`} className="text-sm font-semibold text-white">Motivators</label>
+                <input
+                  id={`motivators-${child.id}`}
+                  name="motivators"
+                  type="text"
+                  maxLength={160}
+                  defaultValue={child.motivators ?? ""}
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                  placeholder="Sticker progress, nature themes, earning helper time"
+                />
+                <FieldError message={profileState.fields?.motivators} />
+              </div>
+            </div>
+
+            <p className="mt-3 text-xs text-[var(--parent-muted)]">Private parent context for calmer planning, not a full child settings system.</p>
           </div>
 
           <div className="md:col-span-2">

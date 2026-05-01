@@ -104,6 +104,51 @@ export function ParentChildCreateForm({
           <FieldError message={state.fields?.pin} />
         </div>
 
+        <div className="md:col-span-2 rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+          <div className="space-y-2">
+            <label htmlFor="learningStrengths" className="text-sm font-semibold text-white">Strengths showing up, optional</label>
+            <input
+              id="learningStrengths"
+              name="learningStrengths"
+              type="text"
+              maxLength={160}
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+              placeholder="Loves read-alouds, remembers routines, enjoys hands-on work"
+            />
+            <FieldError message={state.fields?.learningStrengths} />
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <label htmlFor="supportNotes" className="text-sm font-semibold text-white">Helpful supports, optional</label>
+              <input
+                id="supportNotes"
+                name="supportNotes"
+                type="text"
+                maxLength={160}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="Short sessions, movement breaks, gentle transitions"
+              />
+              <FieldError message={state.fields?.supportNotes} />
+            </div>
+
+            <div>
+              <label htmlFor="motivators" className="text-sm font-semibold text-white">Motivators, optional</label>
+              <input
+                id="motivators"
+                name="motivators"
+                type="text"
+                maxLength={160}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
+                placeholder="Sticker progress, nature themes, earning helper time"
+              />
+              <FieldError message={state.fields?.motivators} />
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-[var(--parent-muted)]">Keep these short. They are parent-only planning cues, not a full profile system.</p>
+        </div>
+
         <div className="md:col-span-2">
           <label htmlFor="parentNotes" className="text-sm font-semibold text-white">Planning notes, optional</label>
           <textarea
@@ -136,7 +181,7 @@ export function ParentChildCreateForm({
       </div>
 
       <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 text-sm leading-7 text-[var(--parent-muted)]">
-        EduCore stores the child PIN as a secure hash, keeps identity nickname-first, and limits planning context to a short parent-authored note instead of a heavy profile system.
+        EduCore stores the child PIN as a secure hash, keeps identity nickname-first, and limits planning context to a few short parent-authored cues instead of a heavy profile system.
       </div>
 
       {state.error ? <p className="text-sm text-rose-300">{state.error}</p> : null}
