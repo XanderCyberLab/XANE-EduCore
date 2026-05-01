@@ -272,6 +272,14 @@ export async function getParentPlannerData(parentUserId: string) {
 
   const plansByChildId = new Map(plans.map((plan) => [plan.childProfileId, plan]));
 
+  type DraftImpactPreviewItem = {
+    dayLabel: string;
+    subjectLabel: SubjectKey;
+    draftTitle: string;
+    liveTitle: string | null;
+    changeType: "add" | "replace" | "unchanged";
+  };
+
   const savedPlans: Array<{
     id: string;
     childName: string;
@@ -288,7 +296,7 @@ export async function getParentPlannerData(parentUserId: string) {
       unchangedCount: number;
       affectedDays: string[];
       notes: string[];
-      previewItems: Array<{ dayLabel: string; subjectLabel: SubjectKey; draftTitle: string; liveTitle: string | null; changeType: "add" | "replace" | "unchanged" }>;
+      previewItems: DraftImpactPreviewItem[];
     };
   }> = [
     ...drafts.map((draft) => {
@@ -296,7 +304,7 @@ export async function getParentPlannerData(parentUserId: string) {
       const subjectLabels = Array.from(new Set(draftItems.map((item) => getSubjectMeta(item.subject).label)));
       const livePlan = plansByChildId.get(draft.childProfileId);
       const liveItems = livePlan?.items ?? [];
-      const draftPreviewItems = draftItems.map((item) => {
+      const draftPreviewItems: DraftImpactPreviewItem[] = draftItems.map((item) => {
         const matchingLiveItem = liveItems.find((liveItem) =>
           liveItem.subject === item.subject && startOfDay(liveItem.assignedDate).getTime() === startOfDay(item.assignedDate).getTime(),
         );
