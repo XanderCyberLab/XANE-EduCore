@@ -108,6 +108,13 @@ export async function getParentRewardPageData(parentUserId: string) {
   return {
     rewardPlans,
     childrenWithoutRewardPlan,
+    rewardSetupSummary: {
+      totalChildren: children.length,
+      activePlanCount: rewardPlans.length,
+      missingPlanCount: childrenWithoutRewardPlan.length,
+      readyCount,
+      closeCount,
+    },
     surfaceSummary: [
       {
         label: "Active reward plans",

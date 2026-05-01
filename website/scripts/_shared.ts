@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, type ExecFileSyncOptions } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 
@@ -48,6 +48,34 @@ export function hasFlag(name: string) {
   return process.argv.includes(name);
 }
 
+function canResolveComposeHost() {
+  return process.env.OPENCLAW_DOCKER === "1" || process.env.DOCKER_CONTAINER === "1" || process.env.CONTAINER === "1";
+}
+
+export function resolveDatabaseUrl(connectionString: string) {
+  let url: URL;
+
+  try {
+    url = new URL(connectionString);
+  } catch {
+    return connectionString;
+  }
+
+  const isDockerContext = canResolveComposeHost() || process.env.HOSTNAME === "web";
+
+  if (!isDockerContext && url.hostname === "db") {
+    url.hostname = "localhost";
+    return url.toString();
+  }
+
+  if (isDockerContext && (url.hostname === "localhost" || url.hostname === "127.0.0.1")) {
+    url.hostname = "db";
+    return url.toString();
+  }
+
+  return connectionString;
+}
+
 export function requireDatabaseUrl() {
   const connectionString = process.env.DATABASE_URL;
 
@@ -55,7 +83,7 @@ export function requireDatabaseUrl() {
     throw new Error("DATABASE_URL is required.");
   }
 
-  return connectionString;
+  return resolveDatabaseUrl(connectionString);
 }
 
 export async function createDbClient() {
@@ -67,10 +95,11 @@ export async function createDbClient() {
   return client;
 }
 
-export function runLocalCommand(command: string, args: string[]) {
+export function runLocalCommand(command: string, args: string[], options?: ExecFileSyncOptions) {
   execFileSync(command, args, {
     stdio: "inherit",
     env: process.env,
+    ...options,
   });
 }
 

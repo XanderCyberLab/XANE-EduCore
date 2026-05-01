@@ -21,6 +21,7 @@ export default async function ParentDashboardPage({
   );
   const resolvedSearchParams = (await searchParams) ?? {};
   const onboardingState = resolvedSearchParams.onboarding;
+  const missingRewardCount = rewardHighlights.filter((reward) => reward.rewardName === "Reward still open").length;
 
   return (
     <main className="space-y-6 pb-8">
@@ -74,8 +75,8 @@ export default async function ParentDashboardPage({
                     <p className="mt-1 leading-6 text-emerald-50/90">Give the dashboard and child flow a real plan to read from.</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-slate-100">
-                    <p className="font-semibold text-white">3. Check rewards</p>
-                    <p className="mt-1 leading-6 text-emerald-50/90">Make sure motivation is visible before the first learning rhythm starts.</p>
+                    <p className="font-semibold text-white">3. Set the first reward</p>
+                    <p className="mt-1 leading-6 text-emerald-50/90">Give each child a simple reward path so tokens and motivation are visible before the first learning rhythm starts.</p>
                   </div>
                 </div>
               </div>
@@ -135,7 +136,11 @@ export default async function ParentDashboardPage({
             </Link>
             <Link href="/parent/rewards" className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 transition hover:bg-white/10">
               <p className="text-sm font-semibold text-white">Rewards</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Check token goals and make the reward path visible early.</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">
+                {missingRewardCount > 0
+                  ? `${missingRewardCount === 1 ? "Create the first reward path" : `Create ${missingRewardCount} reward paths`} so motivation is visible for each child.`
+                  : "Review token goals and make sure each reward path still feels clear and reachable."}
+              </p>
             </Link>
             <Link href="/parent/children" className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4 transition hover:bg-white/10">
               <p className="text-sm font-semibold text-white">Children</p>

@@ -27,24 +27,84 @@ function formatWhen(date: Date | null) {
 
 export default async function ParentRewardsPage() {
   const session = await requireParentSession();
-  const { rewardPlans, childrenWithoutRewardPlan, surfaceSummary } = await getParentRewardPageData(session.parentUserId);
+  const { rewardPlans, childrenWithoutRewardPlan, rewardSetupSummary, surfaceSummary } = await getParentRewardPageData(session.parentUserId);
 
   const readyCount = rewardPlans.filter((plan) => plan.status === "ready").length;
   const closeCount = rewardPlans.filter((plan) => plan.status === "close").length;
+  const hasMissingRewardPlans = childrenWithoutRewardPlan.length > 0;
 
   return (
     <main className="space-y-6 pb-8">
       <ParentHero
         title="Rewards stay practical, warm, and parent-shaped"
-        description="Parents can now create, adjust, and redeem reward plans in-product while keeping the cumulative token cycle calm, visible, and parent-defined."
-        plannerReadiness={readyCount > 0 ? `${readyCount} reward${readyCount === 1 ? " is" : "s are"} ready for a parent decision` : `${closeCount} reward${closeCount === 1 ? " is" : "s are"} getting close`}
-        attentionNote="EduCore keeps the parent in charge. Tokens can build quietly, and only the parent decides when a reward has truly been redeemed and when the next cycle begins."
+        description={hasMissingRewardPlans
+          ? "After child setup, the next useful step is giving each child one simple reward path. EduCore keeps it visible without turning rewards into a bigger system."
+          : "Parents can now create, adjust, and redeem reward plans in-product while keeping the cumulative token cycle calm, visible, and parent-defined."}
+        plannerReadiness={
+          readyCount > 0
+            ? `${readyCount} reward${readyCount === 1 ? " is" : "s are"} ready for a parent decision`
+            : hasMissingRewardPlans
+              ? `${childrenWithoutRewardPlan.length} child${childrenWithoutRewardPlan.length === 1 ? " still needs" : "ren still need"} a reward path`
+              : `${closeCount} reward${closeCount === 1 ? " is" : "s are"} getting close`
+        }
+        attentionNote={hasMissingRewardPlans
+          ? "A first reward can stay very small. Set the goal, keep the meaning simple, and let tokens become understandable before the week gets busy."
+          : "EduCore keeps the parent in charge. Tokens can build quietly, and only the parent decides when a reward has truly been redeemed and when the next cycle begins."}
       />
 
       <ParentSurfaceSummary
         items={surfaceSummary}
         columns="md:grid-cols-3"
       />
+
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">How rewards work</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">A clear first reward setup keeps motivation visible</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--parent-muted)]">
+            Parents only need one simple reward per child to make the token path understandable. The cycle stays calm: create a reward, let tokens build, then redeem only when the real-life reward actually happened.
+          </p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="text-sm font-semibold text-white">1. Create one reward</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Choose a practical reward title and a token goal that feels reachable.</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="text-sm font-semibold text-white">2. Let the cycle stay visible</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Children see steady progress while parents keep the meaning and pacing grounded in real life.</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="text-sm font-semibold text-white">3. Redeem when it really happened</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--parent-muted)]">Only the parent closes the loop and starts a fresh cycle after the reward is actually given.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 shadow-[var(--shadow-soft)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--parent-muted)]">Setup status</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Follow-through at a glance</h2>
+          <div className="mt-5 space-y-3 text-sm leading-6 text-slate-200">
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="font-semibold text-white">Children with reward paths</p>
+              <p className="mt-1 text-[var(--parent-muted)]">{rewardSetupSummary.activePlanCount}/{rewardSetupSummary.totalChildren} children now have an active reward plan.</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="font-semibold text-white">What to do next</p>
+              <p className="mt-1 text-[var(--parent-muted)]">
+                {rewardSetupSummary.missingPlanCount > 0
+                  ? `Create ${rewardSetupSummary.missingPlanCount === 1 ? "the first missing reward plan" : `${rewardSetupSummary.missingPlanCount} missing reward plans`} so each child has a visible reward path.`
+                  : rewardSetupSummary.readyCount > 0
+                    ? `You have ${rewardSetupSummary.readyCount} reward${rewardSetupSummary.readyCount === 1 ? "" : "s"} ready for parent redemption.`
+                    : "All active reward paths are set. You can review wording, goals, or wait for more tokens to build."}
+              </p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-[var(--parent-surface-soft)] p-4">
+              <p className="font-semibold text-white">Why this matters</p>
+              <p className="mt-1 text-[var(--parent-muted)]">Reward setup is easiest right after child setup, before the weekly rhythm starts to depend on it.</p>
+            </div>
+          </div>
+        </section>
+      </section>
 
       <section className="space-y-5">
         {childrenWithoutRewardPlan.length > 0 ? (
@@ -64,8 +124,11 @@ export default async function ParentRewardsPage() {
           </section>
         ) : null}
         {rewardPlans.length === 0 ? (
-          <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 text-sm text-[var(--parent-muted)] shadow-[var(--shadow-soft)]">
-            No active reward plans are set up yet.
+          <section className="rounded-[var(--radius-card)] border border-white/10 bg-[var(--parent-surface)] p-6 text-sm shadow-[var(--shadow-soft)]">
+            <p className="font-semibold text-white">No active reward plans are set up yet.</p>
+            <p className="mt-2 max-w-3xl leading-7 text-[var(--parent-muted)]">
+              Start with one simple reward for each child you want participating. A small, visible first setup is enough to make the reward system understandable.
+            </p>
           </section>
         ) : null}
 

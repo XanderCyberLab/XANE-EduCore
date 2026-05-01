@@ -8,6 +8,9 @@ This is the EduCore website app, built with Next.js, TypeScript, Tailwind, Prism
 4. Bootstrap a safe fake parent account, child account, reward, and starter weekly plan, or create a parent account inside the app after startup.
 5. Start the development server.
 
+Note:
+- `db:setup` and `db:bootstrap` now normalize the database host automatically for common local vs Docker dev cases. If your `.env` uses `db`, host-run scripts will fall back to `localhost`. If your `.env` uses `localhost`, Docker-run scripts will use `db`.
+
 ```bash
 cp .env.example .env
 npm install
@@ -21,12 +24,17 @@ npm run dev
 This repository now includes a dev-only Docker setup for the website and PostgreSQL.
 
 1. Copy `.env.example` to `.env`.
-2. Change `DATABASE_URL` in `.env` to use the compose database host:
-3. Start the containers.
-4. Run Prisma setup manually inside the web container.
-5. Bootstrap local sample data manually inside the web container.
+2. Start the containers.
+3. Run Prisma setup manually inside the web container.
+4. Bootstrap local sample data manually inside the web container.
 
-Example `.env` database value for Docker compose:
+You can keep either of these `.env` database values and the scripts will normalize the host automatically:
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/educore?schema=public"
+```
+
+or
 
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@db:5432/educore?schema=public"
@@ -61,6 +69,8 @@ Notes:
 - This is for local development only.
 - Prisma setup and bootstrap are intentionally manual, not automatic at container start.
 - The app source is mounted into the container so local code changes are reflected while developing.
+- The web service runs as your host UID/GID by default so generated Prisma files are less likely to become root-owned on Linux bind mounts.
+- If you already have root-owned files under `src/generated/prisma` from an older container run, fix them once on the host with `sudo chown -R "$(id -u)":"$(id -g)" src/generated/prisma`.
 
 After bootstrap, use these default local-only credentials unless you override them with flags:
 
@@ -84,12 +94,17 @@ Recommended first checks:
 npm run db:setup
 ```
 
+Optional flag:
+- `--skip-generate` skips the explicit Prisma client generation step and only applies migrations.
+
 This wraps the normal local Prisma flow:
 
 ```bash
 npm run prisma:generate
-npm run prisma:migrate -- --name local_setup
+npx prisma migrate deploy
 ```
+
+`db:setup` now passes a normalized `DATABASE_URL` into Prisma commands and applies checked-in migrations with `prisma migrate deploy`, which is more reliable for local reruns and Docker setup.
 
 You can still use raw Prisma commands directly when needed.
 
