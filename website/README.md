@@ -68,6 +68,7 @@ Notes:
 
 - This is for local development only.
 - Prisma setup and bootstrap are intentionally manual, not automatic at container start.
+- The Docker image now installs OpenSSL so Prisma environment detection stays quieter during normal setup.
 - The app source is mounted into the container so local code changes are reflected while developing.
 - The web service runs as your host UID/GID by default so generated Prisma files are less likely to become root-owned on Linux bind mounts.
 - If you already have root-owned files under `src/generated/prisma` from an older container run, fix them once on the host with `sudo chown -R "$(id -u)":"$(id -g)" src/generated/prisma`.
