@@ -270,10 +270,59 @@ export async function getParentPlannerData(parentUserId: string) {
     }
   }
 
-  const savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: SubjectKey[]; status: "draft" | "active" }> = [
+  const plansByChildId = new Map(plans.map((plan) => [plan.childProfileId, plan]));
+
+  const savedPlans: Array<{
+    id: string;
+    childName: string;
+    summary: string;
+    blockCount: number;
+    completionCount: number;
+    printableCount: number;
+    subjectLabels: SubjectKey[];
+    status: "draft" | "active";
+    draftImpact?: {
+      liveBlockCount: number;
+      wouldAddCount: number;
+      wouldReplaceCount: number;
+      unchangedCount: number;
+      affectedDays: string[];
+      notes: string[];
+      previewItems: Array<{ dayLabel: string; subjectLabel: SubjectKey; draftTitle: string; liveTitle: string | null; changeType: "add" | "replace" | "unchanged" }>;
+    };
+  }> = [
     ...drafts.map((draft) => {
       const draftItems = draft.items;
       const subjectLabels = Array.from(new Set(draftItems.map((item) => getSubjectMeta(item.subject).label)));
+      const livePlan = plansByChildId.get(draft.childProfileId);
+      const liveItems = livePlan?.items ?? [];
+      const draftPreviewItems = draftItems.map((item) => {
+        const matchingLiveItem = liveItems.find((liveItem) =>
+          liveItem.subject === item.subject && startOfDay(liveItem.assignedDate).getTime() === startOfDay(item.assignedDate).getTime(),
+        );
+        const liveTitle = matchingLiveItem?.title ?? null;
+        const changeType = liveTitle === null ? "add" : liveTitle === item.title ? "unchanged" : "replace";
+
+        return {
+          dayLabel: new Date(item.assignedDate).toLocaleDateString("en-US", { weekday: "short" }),
+          subjectLabel: getSubjectMeta(item.subject).label,
+          draftTitle: item.title,
+          liveTitle,
+          changeType,
+        };
+      });
+      const wouldAddCount = draftPreviewItems.filter((item) => item.changeType === "add").length;
+      const wouldReplaceCount = draftPreviewItems.filter((item) => item.changeType === "replace").length;
+      const unchangedCount = draftPreviewItems.filter((item) => item.changeType === "unchanged").length;
+      const affectedDays = Array.from(new Set(draftItems.map((item) => new Date(item.assignedDate).toLocaleDateString("en-US", { weekday: "long" }))));
+      const notes = [
+        livePlan
+          ? `This draft will review against ${liveItems.length} live block${liveItems.length === 1 ? "" : "s"} already saved for this child this week.`
+          : "No live weekly plan exists for this child yet, so approval will publish this draft as the first saved week.",
+        wouldReplaceCount > 0
+          ? `${wouldReplaceCount} block${wouldReplaceCount === 1 ? "" : "s"} would replace live items in the same day and subject slots.`
+          : "No live blocks would be replaced in matching day and subject slots.",
+      ];
 
       return {
         id: draft.id,
@@ -284,6 +333,15 @@ export async function getParentPlannerData(parentUserId: string) {
         printableCount: draftItems.filter((item) => item.isPrintable || item.itemType === PlanItemType.PRINTABLE).length,
         subjectLabels,
         status: "draft" as const,
+        draftImpact: {
+          liveBlockCount: liveItems.length,
+          wouldAddCount,
+          wouldReplaceCount,
+          unchangedCount,
+          affectedDays,
+          notes,
+          previewItems: draftPreviewItems,
+        },
       };
     }),
     ...plans.map((plan) => {

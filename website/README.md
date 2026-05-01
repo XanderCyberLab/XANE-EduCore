@@ -178,6 +178,7 @@ npm run child:create -- \
 - After first-child setup, the parent dashboard, onboarding return state, and children space now point more clearly toward the next practical steps: planning the first week, checking rewards, and reviewing child basics.
 - Child profiles now support a short parent-authored planning note so pacing, supports, interests, or sensitivities can stay attached to the child without turning setup into a heavy settings system.
 - Planner starter draft generation now flows through a dedicated provider boundary in `src/lib/planner-generation.ts`, so future local or hosted AI adapters can plug in without coupling planner save/apply logic to one runtime.
+- Stored planner drafts now show a parent review summary before approval, including which day/subject slots would add new blocks, replace live blocks, or stay unchanged.
 - Creating or resetting a parent with `npm run parent:create` or `npm run db:bootstrap` bumps `sessionVersion`, which cleanly invalidates older parent sessions.
 
 ## Development server

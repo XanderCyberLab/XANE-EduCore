@@ -366,7 +366,25 @@ export function PlannerDetailBoard({
   plannerChildren: Array<{ id: string; nickname: string; ageLabel: string; hasPlan: boolean }>;
   defaultWeekOf: string;
   parentGuidance: string[];
-  savedPlans: Array<{ id: string; childName: string; summary: string; blockCount: number; completionCount: number; printableCount: number; subjectLabels: string[]; status: "draft" | "active" }>;
+  savedPlans: Array<{
+    id: string;
+    childName: string;
+    summary: string;
+    blockCount: number;
+    completionCount: number;
+    printableCount: number;
+    subjectLabels: string[];
+    status: "draft" | "active";
+    draftImpact?: {
+      liveBlockCount: number;
+      wouldAddCount: number;
+      wouldReplaceCount: number;
+      unchangedCount: number;
+      affectedDays: string[];
+      notes: string[];
+      previewItems: Array<{ dayLabel: string; subjectLabel: string; draftTitle: string; liveTitle: string | null; changeType: "add" | "replace" | "unchanged" }>;
+    };
+  }>;
 }) {
   return (
     <section className="space-y-6">
@@ -504,13 +522,50 @@ export function PlannerDetailBoard({
                         {plan.printableCount} printable{plan.printableCount === 1 ? "" : "s"}
                       </span>
                     </div>
-                    {plan.status === "draft" ? (
-                      <form action={applyPlannerDraftAction} className="mt-4">
-                        <input type="hidden" name="draftId" value={plan.id} />
-                        <button type="submit" className="rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-sky-100 transition hover:bg-sky-300/20">
-                          Approve and apply draft
-                        </button>
-                      </form>
+                    {plan.status === "draft" && plan.draftImpact ? (
+                      <div className="mt-4 space-y-4">
+                        <div className="rounded-2xl border border-sky-300/20 bg-sky-300/10 p-3 text-xs leading-6 text-sky-100">
+                          <p className="font-semibold uppercase tracking-[0.14em]">Before approval</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <span className="rounded-full border border-sky-200/20 bg-slate-950/20 px-2.5 py-1">{plan.draftImpact.wouldAddCount} add</span>
+                            <span className="rounded-full border border-sky-200/20 bg-slate-950/20 px-2.5 py-1">{plan.draftImpact.wouldReplaceCount} replace</span>
+                            <span className="rounded-full border border-sky-200/20 bg-slate-950/20 px-2.5 py-1">{plan.draftImpact.unchangedCount} unchanged</span>
+                            <span className="rounded-full border border-sky-200/20 bg-slate-950/20 px-2.5 py-1">{plan.draftImpact.affectedDays.join(", ")}</span>
+                          </div>
+                          <div className="mt-3 space-y-2">
+                            {plan.draftImpact.notes.map((note) => (
+                              <p key={`${plan.id}-${note}`}>{note}</p>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          {plan.draftImpact.previewItems.map((item) => (
+                            <div key={`${plan.id}-${item.dayLabel}-${item.subjectLabel}-${item.draftTitle}`} className="rounded-2xl border border-white/10 bg-slate-950/20 p-3">
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--parent-muted)]">
+                                <span>{item.dayLabel}</span>
+                                <span>•</span>
+                                <span>{item.subjectLabel}</span>
+                                <span className={`rounded-full border px-2 py-0.5 ${item.changeType === "replace" ? "border-amber-300/20 bg-amber-300/10 text-amber-100" : item.changeType === "add" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100" : "border-white/10 bg-white/5 text-[var(--parent-muted)]"}`}>
+                                  {item.changeType}
+                                </span>
+                              </div>
+                              <p className="mt-2 text-sm font-semibold text-white">Draft: {item.draftTitle}</p>
+                              <p className="mt-1 text-sm leading-6 text-[var(--parent-muted)]">
+                                {item.liveTitle ? `Live now: ${item.liveTitle}` : "Live now: no block in this slot"}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <form action={applyPlannerDraftAction} className="space-y-2">
+                          <input type="hidden" name="draftId" value={plan.id} />
+                          <button type="submit" className="rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-sky-100 transition hover:bg-sky-300/20">
+                            Approve draft and update live week
+                          </button>
+                          <p className="text-xs leading-5 text-[var(--parent-muted)]">Approval applies this draft into the live child week, then removes the stored draft.</p>
+                        </form>
+                      </div>
                     ) : null}
                   </div>
                 ))
